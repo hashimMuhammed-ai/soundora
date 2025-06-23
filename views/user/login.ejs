@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Page</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/user/login.css">
+</head>
+<style>
+  
+</style>
+
+<body>
+  <div class="form-container">
+    <h1 class="title">LOGIN</h1>
+    <% if (error) { %>
+      <p class="message">
+        <%= error %>
+      </p>
+    <% } %>
+       
+    <form id="signform" class="form" action="/login" method="POST">
+      <div class="input-group">
+        <label for="email">Email</label>
+        <input type="text" name="email" id="email" placeholder="Enter your email">
+        <div id="error2" class="error-message"></div>
+      </div>
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter your password">
+        <div id="error4" class="error-message"></div>
+      </div>
+      <div class="forgot">
+        <a href="/forgot-password">Forgot password?</a>
+      </div>
+      <button class="sign-in">Sign in</button>
+      <div class="social-messages">
+        <div class="line"></div>
+        <p class="message">Login with social</p>
+        <div class="line"></div>
+      </div>
+      <div class="icons">
+        <a href="/auth/google"><i class="fa-brands fa-google"></i></a>
+      </div>
+      <p class="sign-up">Don't have an account?
+        <a href="/signup">Sign up</a>
+      </p>
+    </form>
+  </div>
+
+  <script>
+    const emailid = document.getElementById('email');
+    const passid = document.getElementById('password');
+    const error2 = document.getElementById('error2');
+    const error4 = document.getElementById('error4');
+    const signform = document.getElementById('signform');
+    
+    function emailValidateChecking() {
+      const emailval = emailid.value;
+      const emailpattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+      if (!emailpattern.test(emailval)) {
+        error2.style.display = "block";
+        error2.innerHTML = "Please enter a valid email";
+        return false;
+      } else {
+        error2.style.display = "none";
+        error2.innerHTML = "";
+        return true;
+      }
+    }
+ 
+    function passValidateChecking() {
+      const passval = passid.value;
+      const passpattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
+ 
+      if (!passpattern.test(passval)) {
+        error4.style.display = "block";
+        error4.innerHTML = "Password must contain at least one uppercase, one lowercase and one digit";
+        return false;
+      } else {
+        error4.style.display = "none";
+        error4.innerHTML = "";
+        return true;
+      }
+    }
+ 
+    document.addEventListener("DOMContentLoaded", () => {
+      // Check for input changes to provide real-time validation
+      emailid.addEventListener('blur', emailValidateChecking);
+      passid.addEventListener('blur', passValidateChecking);
+      
+      signform.addEventListener('submit', (e) => {
+        const isEmailValid = emailValidateChecking();
+        const isPassValid = passValidateChecking();
+          
+        if (!emailid || !passid || !error2 || !error4 || !signform) {
+          console.log("One or more elements not found");
+          e.preventDefault();
+          return;
+        }
+        
+        if (emailid.value.trim() === "" || passid.value.trim() === "") {
+          e.preventDefault();
+          if (emailid.value.trim() === "") {
+            error2.style.display = "block";
+            error2.innerHTML = "Email is required";
+          }
+          if (passid.value.trim() === "") {
+            error4.style.display = "block";
+            error4.innerHTML = "Password is required";
+          }
+          return;
+        }
+        
+        if (!isEmailValid || !isPassValid) {
+          e.preventDefault();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

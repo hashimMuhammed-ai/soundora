@@ -1,0 +1,212 @@
+<%- include("../../views/partials/admin/header.ejs") %>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+    .main-content {
+        margin-left: 250px;
+        margin-top: 40px;
+        margin-right:40px;
+        min-height: 100vh;
+        background: #f8f9fa;
+    }
+    .content-wrapper {
+        background: white;
+        padding: 20px 20px 40px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .table-container {
+        margin-top: 20px;
+        overflow-x: auto;
+    }
+    .pagination {
+        margin: 30px 0;
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .page-item {
+        margin: 0 2px;
+    }
+    
+    .page-link {
+        color: #333;
+        background-color: #fff;
+        border: 2px solid #e9ecef;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        min-width: 45px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .page-link:hover {
+        background-color: #f8f9fa;
+        color: #007bff;
+        border-color: #007bff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .page-item.active .page-link {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: #fff;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0,123,255,0.2);
+    }
+    
+    .page-item.disabled .page-link {
+        color: #6c757d;
+        pointer-events: none;
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+        opacity: 0.7;
+    }
+
+    .page-item:first-child .page-link,
+    .page-item:last-child .page-link {
+        padding: 12px 18px;
+    }
+</style>
+
+<div class="main-content">
+    <div class="container-fluid">
+        <div class="content-wrapper">
+            <h2 class="mb-4">Customers</h2>
+            
+            <!-- Search Bar -->
+            <div class="search-container">
+                <form method="GET" action="/admin/customers">
+                    <div class="input-group">
+                        <input type="text" name="search" value="<%= search %>" id="searchInput" class="form-control" placeholder="Search by name, email, phone" 
+                        style="height: 40px;width: 272px;padding: 10px;">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                    
+                </form>
+            </div>
+
+            <!-- Customers Table -->
+            <div class="table-container">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone No.</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% for (let i = 0; i < data.length; i++) { %>
+                            <tr>
+                                <td><%= data[i].name %></td>
+                                <td><%= data[i].email %></td>
+                                <td><%= data[i].phone %></td>
+                                <td>
+                                    <button onclick="toggleBlock('<%= data[i]._id %>', '<%= data[i].isBlocked %>')" class="btn <%= data[i].isBlocked ? 'btn-success' : 'btn-danger' %>">
+                                        <%= data[i].isBlocked ? 'Unblock' : 'Block' %> 
+                                    </button>
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                        <a class="page-link" href="/admin/customers?page=<%= Math.max(1, currentPage - 1) %>&search=<%= search %>" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <% for (let i = 1; i <= totalPages; i++) { %>
+                        <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                            <a class="page-link" href="/admin/customers?page=<%= i %>&search=<%= search %>"><%= i %></a>
+                        </li>
+                    <% } %>
+                    <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                       <a class="page-link" href="/admin/customers?page=<%= Math.min(totalPages, currentPage + 1) %>&search=<%= search %>" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+<script>
+    async function toggleBlock(userId, isBlocked) {
+        try {
+            isBlocked = isBlocked === 'true';
+            // Add confirmation dialog before blocking/unblocking
+            const result = await Swal.fire({
+                title: isBlocked ? 'Unblock Customer?' : 'Block Customer?',
+                text: isBlocked 
+                    ? 'Are you sure you want to unblock this customer?' 
+                    : 'Are you sure you want to block this customer?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, proceed',
+                cancelButtonText: 'Cancel',
+                customClass: {
+                    popup: 'my-custom-popup-class',
+                    title: 'my-custom-title-class',
+                    content: 'my-custom-content-class'
+                }
+            });
+            if (result.isConfirmed) {
+                console.log("Sending:", { id: userId, isBlocked: !isBlocked });
+                const response = await fetch('/admin/toggleBlock', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id: userId, isBlocked: !isBlocked })
+                });
+                
+                const data = await response.json();
+                console.log('The Response Data', data);
+                
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Success!',
+                        text: isBlocked ? 'Customer unblocked successfully' : 'Customer blocked successfully',
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timer: 1500,
+                        background: 'linear-gradient(to right, #4CAF50, #A5D6A7)',
+                    });
+                    const button = document.querySelector(`button[onclick="toggleBlock('${userId}', ${isBlocked})"]`);
+                    button.innerText = isBlocked ? "Block" : "Unblock";
+                    button.classList.toggle('btn-danger');
+                    button.classList.toggle('btn-success');
+
+                    button.setAttribute('onclick', `toggleBlock('${userId}', ${!isBlocked})`);
+                }
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    }
+</script>
+    
+
+<%- include("../../views/partials/admin/footer") %>

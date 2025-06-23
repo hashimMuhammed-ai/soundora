@@ -1,0 +1,296 @@
+
+    <%- include("../../views/partials/admin/header") %>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <style>
+       .dashboard-hed {
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 33px;
+            color: #fff;
+            text-align: justify;
+            /* text-transform: uppercase; */
+            background: linear-gradient(45deg, #251a1a, #fc913a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 3px;
+            text-shadow: 3px 3px 10px rgba(191, 190, 190, 0.4);
+            animation: glowText 1.5s infinite alternate ease-in-out;    
+        }
+
+        @keyframes glowText {
+            from {
+                text-shadow: 3px 3px 10px rgba(191, 190, 190, 0.4);
+            }
+            to {
+                text-shadow: 5px 5px 20px rgba(191, 190, 190, 0.8);
+            }
+        } 
+
+
+    </style>
+    <main class="main-content">
+        
+        <h1 class="dashboard-hed">Dashboard</h1>
+
+        <div class="summary-cards">
+            <a href="/admin/salesReport" style="text-decoration: none; color: inherit;">
+            <div class="summary-card">
+                <div class="summary-icon">
+                    <i class="fa fa-chart-line" style="color: #000000;"></i>
+                </div>
+                <div class="summary-info">
+                    <h3>₹<%= Math.round((dashboardData.summary?.totalRevenue || 0)).toLocaleString() %></h3>
+                    <p>Total Revenue</p>
+                </div>
+                <!-- <div class="summary-change <dashboardData.summary.revenueGrowth >= 0 ? 'increase' : 'decrease' %>">
+                    <i class="fas fa-arrow-< dashboardData.summary.revenueGrowth >= 0 ? 'up' : 'down' %>"></i>
+                    <span>< Math.abs(dashboardData.summary.revenueGrowth) %>%</span>
+                </div> -->
+            </div>
+            </a>
+            <a href="/admin/customers" style="text-decoration: none; color: inherit;">
+            <div class="summary-card">
+                <div class="summary-icon">
+                    <i class="fa fa-users" style="color: #000000;"></i>
+                </div>
+                <div class="summary-info">
+                   <h3><%= (dashboardData.summary?.totalCustomers || 0).toLocaleString() %></h3>
+                    <p>Total Customers</p>
+                </div>
+                <!-- <div class="summary-change < dashboardData.summary.customerGrowth >= 0 ? 'increase' : 'decrease' %>">
+                    <i class="fas fa-arrow-< dashboardData.summary.customerGrowth >= 0 ? 'up' : 'down' %>"></i>
+                    <span><Math.abs(dashboardData.summary.customerGrowth) %>%</span>
+                     <span>89%</span> 
+                </div> -->
+            </div>
+            </a>
+            <a href="/admin/orders" style="text-decoration: none; color: inherit;">
+            <div class="summary-card">
+                <div class="summary-icon">
+                    <i class="fas fa-shopping-cart" style="color: #000000;"></i>
+                </div>
+                <div class="summary-info">
+                    <h3><%= (dashboardData.summary?.totalOrders || 0).toLocaleString() %></h3>
+                    <p>Total Orders</p>
+                </div>
+                <!-- <div class="summary-change < dashboardData.summary.orderGrowth >= 0 ? 'increase' : 'decrease' %>">
+                    <i class="fas fa-arrow-< dashboardData.summary.orderGrowth >= 0 ? 'up' : 'down' %>"></i>
+                    <span>< Math.abs(dashboardData.summary.orderGrowth) %>%</span>
+                </div> -->
+            </div>
+            </a>
+        </div>
+
+        <div class="chart-filter-container">
+            <label for="salesChartFilter" class="chart-label">Select Time Filter:</label>
+            <select id="salesChartFilter" class="chart-select">
+                <option value="yearly">Yearly</option>
+                <option value="monthly">Monthly</option>
+                <option value="weekly" selected>Weekly</option>
+            </select>
+        </div>
+        
+    
+        <!-- Charts Section -->
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Sales Revenue</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Customer Growth</h3>
+                    <!-- <div class="chart-filter">
+                        <select id="customersChartFilter" class="chart-select">
+                            <option value="yearly">Yearly</option>
+                            <option value="monthly" >Monthly</option>
+                            <option value="weekly" selected>Weekly</option>
+                        </select>
+                    </div> -->
+                </div>
+                <div class="chart-container">
+                    <canvas id="customersChart"></canvas>
+                </div>
+            </div>
+        </div>
+    
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Orders Overview</h3>
+                    <!-- <div class="chart-filter"> 
+                        <select id="ordersChartFilter" class="chart-select">
+                            <option value="yearly">Yearly</option>
+                            <option value="monthly" >Monthly</option>
+                            <option value="weekly" selected>Weekly</option>
+                        </select>
+                    </div> -->
+                </div>
+                <div class="chart-container">
+                    <canvas id="ordersChart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Category Performance</h3>
+                    <!-- <div class="chart-filter">
+                        <select id="categoryChartFilter" class="chart-select">
+                            <option value="yearly">Yearly</option>
+                            <option value="monthly" >Monthly</option>
+                            <option value="weekly" selected>Weekly</option>
+                        </select>
+                    </div> -->
+                </div>
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    
+        <div class="dashboard-container">
+            <!-- Top Selling Products -->
+            <div class="card" style="margin-top: 40px;">
+                <div class="card-header">
+                    <h3 class="card-title">Top 5 Selling Products</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Product</th>
+                                <th>Sold</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% topSellingProducts.forEach(product => { %>
+                                <tr>
+                                    <td>
+                                        <img src="/uploads/product-images/<%= product.productImages[0] %>" 
+                                             alt="<%= product.productName %>" 
+                                             class="product-image">
+                                    </td>
+                                    <td><%= product.productName %></td>
+                                    <td><%= product.totalSold %></td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        
+            <!-- Top Selling Categories (Now Positioned Below) -->
+            <div class="card category-card">
+                <div class="card-header">
+                    <h3 class="card-title">Top Selling Categories</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Sold</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% topSellingCategories.forEach(category => { %>
+                                <tr>
+                                    <td><%= category.name %></td>
+                                    <td><%= category.totalSold %></td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card brand-card">
+                <div class="card-header">
+                    <h3 class="card-title">Top Selling Brands</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Brand Logo</th>
+                                <th>Brand</th>
+                                <th>Sold</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% topSellingBrands.forEach(brand => { %>
+                                <tr>
+                                    <td>
+                                        <img class="brand-image" src="/uploads/brands/<%= brand.brandImage %>" 
+                                             alt="<%= brand.brandName %>" 
+                                             class="brand-image">
+                                    </td>
+                                    <td><%= brand.brandName %></td>
+                                    <td><%= brand.totalSold %></td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Recent Orders -->
+        <div class="card recent-orders" style="margin-top: 40px;">
+            <div class="card-header">
+                <div style="display: flex;justify-content: space-between;margin-bottom: 24px;">
+                    <h3 class="card-title">Recent Orders</h3>
+                    <a href="/admin/orders" class="view-all-btn">View All</a>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <!-- <th>Product</th> -->
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% (dashboardData.recentOrders || []).forEach(order => { %>
+                            <tr>
+                                <td class="order-link">#<%= order.orderId %></td>
+                                <td><%= order.customer %></td>
+                                <!-- <td><img src="/uploads/product-images/<order.productImages %>" alt=""></td> -->
+                                <td><%= new Date(order.date).toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric'
+                                }) %></td>
+                                <td class="amount">₹<%= order.amount.toLocaleString() %></td>
+                                <td>
+                                    <span class="status <%= order.status.toLowerCase() %>"><%= order.status %></span>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Pass dashboard data to client-side JavaScript
+        window.dashboardData = <%-JSON.stringify(dashboardData) %>;
+        
+    </script>
+    
+    <%- include("../../views/partials/admin/footer") %>

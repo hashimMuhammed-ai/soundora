@@ -1,0 +1,513 @@
+<%- include("../../views/partials/admin/header") %>
+<style>
+  .content-main {
+    padding: 30px;
+    padding-top: 90px;
+    padding-left: 300px;
+  }
+
+  .content-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+  }
+
+  .content-title {
+    color: #333;
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .brand-container {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 25px;
+  }
+
+  .brand-form {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+  }
+
+  .brand-form form {
+    display: flex;
+    align-items: flex-end;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+
+  .form-group {
+    flex: 1;
+    min-width: 200px;
+    margin: 0;
+  }
+
+  .brand-form .form-label {
+    font-weight: 500;
+    color: #4a5568;
+    margin-bottom: 8px;
+  }
+
+  .brand-form .form-control {
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 10px 15px;
+    transition: all 0.3s ease;
+  }
+
+  .brand-form .form-control:focus {
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+  }
+
+  .btn-add-brand {
+    background: linear-gradient(45deg, #4299e1, #667eea);
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-weight: 500;
+    height: 42px;
+    transition: all 0.3s ease;
+  }
+
+  .btn-add-brand:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.15);
+    background: linear-gradient(45deg, #3182ce, #5a67d8);
+  }
+
+  .brand-table {
+    margin-top: 20px;
+  }
+
+  .table {
+    width: 100%;
+    background: #fff;
+    border-radius: 8px;
+  }
+
+  .table thead th {
+    background: #f7fafc;
+    color: #4a5568;
+    font-weight: 600;
+    padding: 15px;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  .table tbody td {
+    padding: 15px;
+    vertical-align: middle;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .brand-logo {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .brand-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .badge {
+    padding: 6px 12px;
+    font-weight: 500;
+    font-size: 12px;
+    border-radius: 20px;
+  }
+
+  .badge.alert-success {
+    background: #ebf8f4;
+    color: #0f766e;
+  }
+
+  .badge.alert-danger {
+    background: #fef2f2;
+    color: #dc2626;
+  }
+
+  .btn-action {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 13px;
+    margin-right: 8px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 90px;
+  }
+
+  .btn-action.btn-danger {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+  }
+
+  .btn-action.btn-danger:hover {
+    background: #fecaca;
+    border-color: #ef4444;
+    transform: translateY(-1px);
+  }
+
+  .btn-action.btn-success {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #d1fae5;
+  }
+
+  .btn-action.btn-success:hover {
+    background: #d1fae5;
+    border-color: #10b981;
+    transform: translateY(-1px);
+  }
+
+  .actions-cell {
+    white-space: nowrap;
+  }
+
+  .pagination {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.pagination a {
+  color: #4a5568;
+  padding: 8px 14px;
+  margin: 0 5px;
+  border-radius: 6px;
+  text-decoration: none;
+  border: 1px solid #e2e8f0;
+  background: #f7fafc;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.pagination a:hover {
+  background: #4299e1;
+  color: #fff;
+}
+
+.pagination a.active {
+  background: #4299e1;
+  color: white;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+</style>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<section class="content-main">
+  <div class="content-header">
+    <div>
+      <h2 class="content-title">Brand Management</h2>
+    </div>
+  </div>
+
+  <div class="brand-container">
+    <!-- Add Brand Form -->
+    <div class="brand-form">
+      <h4 class="mb-4">Add New Brand</h4>
+      <form method="post" action="/admin/addBrand" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="brandName" class="form-label">Brand Name</label>
+          <input
+            type="text"
+            id="brandName"
+            name="name"
+            placeholder="Enter brand name"
+            class="form-control"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="brandImage" class="form-label">Brand Logo</label>
+          <input 
+            class="form-control" 
+            id="brandImage"
+            name="image" 
+            type="file"
+            accept="image/*"
+            required
+          />
+        </div>
+        <button class="btn-add-brand" type="submit">
+          Add Brand
+        </button>
+      </form>
+    </div>
+
+    <!-- Brands Table -->
+    <div class="brand-table">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Brand</th>
+              <th>Logo</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+          <% data.forEach((brand) => { %>
+            <tr>
+              <td><%=brand.brandName%></td>
+              <td>
+                <div class="brand-logo">
+                  <img
+                    src="/uploads/brands/<%=brand.brandImage%>"
+                    alt="<%=brand.brandName%>"
+                  />
+                </div>
+              </td>
+              <td>
+                <% if(brand.isBlocked) { %>
+                  <span class="badge alert-danger">Blocked</span>
+                <% } else { %>
+                  <span class="badge alert-success">Active</span>
+                <% } %>
+              </td>
+              <td class="actions-cell">
+                <% if(!brand.isBlocked) { %>
+                  <a href="#" onclick="blockBrand('<%=brand._id%>', this)" class="btn-action btn-danger">Block</a>
+                <% } else { %>
+                  <a href="#" onclick="unblockBrand('<%=brand._id%>', this)" class="btn-action btn-success">Unblock</a>
+                <% } %>
+                <a href="#" 
+                   onclick="confirmDelete('<%=brand._id%>', '<%=brand.brandName%>')" 
+                   class="btn-action btn-danger">Delete</a>
+              </td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+      <% if (totalPages > 1) { %>
+        <div class="pagination">
+          <% if (currentPage > 1) { %>
+            <a href="?page=<%= currentPage - 1 %>">&laquo; Prev</a>
+          <% } %>
+
+          <% for (let i = 1; i <= totalPages; i++) { %>
+            <a href="?page=<%= i %>" class="<%= i === currentPage ? 'active' : '' %>">
+              <%= i %>
+            </a>
+          <% } %>
+
+          <% if (currentPage < totalPages) { %>
+            <a href="?page=<%= currentPage + 1 %>">Next &raquo;</a>
+          <% } %>
+        </div>
+      <% } %>
+
+  </div>
+</section>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+  // Add Brand Form Submission
+  document.querySelector(".brand-form form").addEventListener("submit", async function (event) {
+    event.preventDefault();
+    
+    const formData = new FormData(this);
+    try {
+      const response = await fetch("/admin/addBrand", {
+        method: "POST",
+        body: formData,
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        Swal.fire({
+          title: "Success!",
+          text: result.message,
+          icon: "success",
+          showConfirmButton: false,
+          timer: 1500
+        });
+        
+        // Add the new brand to the table without reloading
+        if (result.brand) {
+          addBrandToTable(result.brand);
+          // Reset the form
+          this.reset();
+        }
+      } else {
+        Swal.fire({
+          title: "Error!",
+          text: result.message,
+          icon: "error",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      Swal.fire({
+        title: "Error!",
+        text: "Something went wrong. Please try again.",
+        icon: "error",
+      });
+    }
+  });
+  
+  // Function to add a new brand to the table
+  function addBrandToTable(brand) {
+    const tbody = document.querySelector(".brand-table table tbody");
+    const newRow = document.createElement("tr");
+    
+    newRow.innerHTML = `
+      <td>${brand.brandName}</td>
+      <td>
+        <div class="brand-logo">
+          <img src="/uploads/brands/${brand.brandImage}" alt="${brand.brandName}" />
+        </div>
+      </td>
+      <td>
+        <span class="badge alert-success">Active</span>
+      </td>
+      <td class="actions-cell">
+        <a href="#" onclick="blockBrand('${brand._id}', this)" class="btn-action btn-danger">Block</a>
+        <a href="#" onclick="confirmDelete('${brand._id}', '${brand.brandName}')" class="btn-action btn-danger">Delete</a>
+      </td>
+    `;
+    
+    tbody.insertBefore(newRow, tbody.firstChild);
+  }
+});
+
+// Block/Unblock brand function
+function blockBrand(brandId, element) {
+  const action = element.textContent === "Block" ? "blockBrand" : "unblockBrand";
+  
+  fetch(`/admin/${action}?id=${brandId}`, {
+    method: "GET"
+  })
+  .then(response => response.json())
+  .then(result => {
+    if (result.success) {
+      const row = element.closest("tr");
+      const statusCell = row.querySelector("td:nth-child(3) span");
+      
+      if (action === "blockBrand") {
+        statusCell.className = "badge alert-danger";
+        statusCell.textContent = "Blocked";
+        element.textContent = "Unblock";
+        element.className = "btn-action btn-success";
+        element.onclick = function() { blockBrand(brandId, element); };
+      } else {
+        statusCell.className = "badge alert-success";
+        statusCell.textContent = "Active";
+        element.textContent = "Block";
+        element.className = "btn-action btn-danger";
+        element.onclick = function() { blockBrand(brandId, element); };
+      }
+      
+      Swal.fire({
+        title: "Success!",
+        text: result.message,
+        icon: "success",
+        showConfirmButton: false,
+        timer: 1500
+      });
+    } else {
+      Swal.fire({
+        title: "Error!",
+        text: result.message || "Operation failed",
+        icon: "error"
+      });
+    }
+  })
+  .catch(error => {
+    console.error(error);
+    Swal.fire({
+      title: "Error!",
+      text: "Something went wrong. Please try again.",
+      icon: "error"
+    });
+  });
+  
+  return false;
+}
+
+// Delete brand function
+function confirmDelete(brandId, brandName) {
+  Swal.fire({
+    title: 'Delete Brand?',
+    html: `Are you sure you want to delete <strong>${brandName}</strong>?<br>This action cannot be undone.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dc3545',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel',
+    reverseButtons: true
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Send delete request via fetch
+      fetch(`/admin/deleteBrand?id=${brandId}`, {
+        method: "GET"
+      })
+      .then(response => response.json())
+      .then(result => {
+        if (result.success) {
+          // Find and remove the row from the table
+          const rows = document.querySelectorAll(".brand-table table tbody tr");
+          for (let row of rows) {
+            if (row.querySelector(`a[onclick*="${brandId}"]`)) {
+              row.remove();
+              break;
+            }
+          }
+          
+          Swal.fire({
+            title: 'Success!',
+            text: 'Deleted successfully!',
+            icon: 'success',
+            showConfirmButton: false,
+            timer: 1500
+          });
+        } else {
+          Swal.fire({
+            title: "Error!",
+            text: result.message || "Delete operation failed",
+            icon: "error"
+          });
+        }
+      })
+      .catch(error => {
+        console.error(error);
+        Swal.fire({
+          title: "Error!",
+          text: "Something went wrong during deletion. Please try again.",
+          icon: "error"
+        });
+      });
+    }
+  });
+  return false;
+}
+</script>
+
+<%- include("../../views/partials/admin/footer") %>
