@@ -379,8 +379,6 @@
                     <% data.forEach(function(product) { %>
                         <tr class="div-product" data-product-id="<%= product._id %>">
                             <td style="display: flex; align-items: center;">
-                                <img class="product-image" src="/uploads/product-images/<%= product.productImages[0] %>"
-                                    alt="<%= product.productName %>">
                                 <%= product.productName %>
                             </td>
                             <td> 
@@ -791,71 +789,73 @@
         });
 
         // Status toggle functionality
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('.toggle-status').forEach(toggle => {
-                toggle.addEventListener('change', function () {
-                    const productId = this.getAttribute('data-id');
-                    const statusLabel = this.nextElementSibling;
-                    const isListed = this.checked;
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.toggle-status').forEach(toggle => {
+        toggle.addEventListener('change', function () {
+            const productId = this.getAttribute('data-id');
+            const statusLabel = this.nextElementSibling;
+            const isListed = this.checked;
+
+            Swal.fire({
+                title: 'Confirm Status Change',
+                text: `Are you sure you want to ${isListed ? 'list' : 'unlist'} this product?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, change it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    updateProductStatus(productId, isListed, this, statusLabel);
+                } else {
+                    this.checked = !isListed;
+                }
+            });
+        });
+    });
+
+    function updateProductStatus(productId, isListed, toggleElement, statusLabel) {
+        fetch(`/admin/toggle-list/${productId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ isListed })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update status label
+                    statusLabel.textContent = isListed ? 'Listed' : 'Unlisted';
+                    statusLabel.className = `status-label ms-2 ${isListed ? 'text-success' : 'text-danger'}`;
+                    // Update checkbox state
+                    toggleElement.checked = isListed;
 
                     Swal.fire({
-                        title: 'Confirm Status Change',
-                        text: `Are you sure you want to ${isListed ? 'list' : 'unlist'} this product?`,
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#3085d6',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Yes, change it!'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            updateProductStatus(productId, isListed, this, statusLabel);
-                        } else {
-                            this.checked = !isListed;
-                        }
+                        icon: 'success',
+                        title: 'Status Updated',
+                        text: data.message,
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 2000
                     });
+                } else {
+                    throw new Error(data.message || 'Failed to update status');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toggleElement.checked = !isListed;
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'Failed to update status'
                 });
             });
-
-            function updateProductStatus(productId, isListed, toggleElement, statusLabel) {
-                fetch(`/admin/toggle-list/${productId}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ isListed })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Update status label
-                            statusLabel.textContent = isListed ? 'Listed' : 'Unlisted';
-                            statusLabel.className = `status-label ms-2 ${isListed ? 'text-success' : 'text-danger'}`;
-
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Status Updated',
-                                text: data.message,
-                                toast: true,
-                                position: 'top-end',
-                                showConfirmButton: false,
-                                timer: 2000
-                            });
-                        } else {
-                            throw new Error(data.message || 'Failed to update status');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        toggleElement.checked = !isListed;
-
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: error.message || 'Failed to update status'
-                        });
-                    });
-            }
-        });
+    }
+});
     </script>
 
     <!-- Ensure SweetAlert2 is included -->

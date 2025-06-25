@@ -1,0 +1,78 @@
+
+    (function() {
+      var baseURL = "https://cdn.shopify.com/shopifycloud/checkout-web/assets/";
+      var scripts = ["https://cdn.shopify.com/shopifycloud/checkout-web/assets/c1.ro/polyfills.I3JIKAFZ.js","https://cdn.shopify.com/shopifycloud/checkout-web/assets/c1.ro/app.DX6NcLhn.js","https://cdn.shopify.com/shopifycloud/checkout-web/assets/c1.ro/page-OnePage.CdaC0dRv.js","https://cdn.shopify.com/shopifycloud/checkout-web/assets/c1.ro/DeliveryMethodSelectorSection.Bu-ot1P8.js","https://cdn.shopify.com/shopifycloud/checkout-web/assets/c1.ro/useEditorShopPayNavigation._oECx4V6.js","https://cdn.shopify.com/shopifycloud/checkout-web/assets/c1.ro/VaultedPayment.CVO2NHGr.js","https://cdn.shopify.com/shopifycloud/checkout-web/assets/c1.ro/LocalizationExtensionField.DWjw0cgl.js","https://cdn.shopify.com/shopifycloud/checkout-web/assets/c1.ro/ShopPayOptInDisclaimer.hbP7Qf2F.js","https://cdn.shopify.com/shopifycloud/checkout-web/assets/c1.ro/UnavailableInBuyerLocationBanner.BElP2NSs.js","https://cdn.shopify.com/shopifycloud/checkout-web/assets/c1.ro/PayButtonSection.CbR2Vbtv.js","https://cdn.shopify.com/shopifycloud/checkout-web/assets/c1.ro/component-ShopPayVerificationSwitch.DR0LigUj.js","https://cdn.shopify.com/shopifycloud/checkout-web/assets/c1.ro/useSubscribeMessenger.BX856bga.js","https://cdn.shopify.com/shopifycloud/checkout-web/assets/c1.ro/index.Dh8OyCOj.js"];
+      var styles = ["https://cdn.shopify.com/shopifycloud/checkout-web/assets/c1.ro/assets/app.Bvaayr-4.css","https://cdn.shopify.com/shopifycloud/checkout-web/assets/c1.ro/assets/OnePage.PMX4OSBO.css","https://cdn.shopify.com/shopifycloud/checkout-web/assets/c1.ro/assets/DeliveryMethodSelectorSection.DmqjTkNB.css","https://cdn.shopify.com/shopifycloud/checkout-web/assets/c1.ro/assets/useEditorShopPayNavigation.DCOTvxC3.css","https://cdn.shopify.com/shopifycloud/checkout-web/assets/c1.ro/assets/VaultedPayment.OxMVm7u-.css","https://cdn.shopify.com/shopifycloud/checkout-web/assets/c1.ro/assets/ShopPayVerificationSwitch.DW7NMDXG.css"];
+      var fontPreconnectUrls = [];
+      var fontPrefetchUrls = [];
+      var imgPrefetchUrls = [];
+
+      function preconnect(url, callback) {
+        var link = document.createElement('link');
+        link.rel = 'dns-prefetch preconnect';
+        link.href = url;
+        link.crossOrigin = '';
+        link.onload = link.onerror = callback;
+        document.head.appendChild(link);
+      }
+
+      function preconnectAssets() {
+        var resources = [baseURL].concat(fontPreconnectUrls);
+        var index = 0;
+        (function next() {
+          var res = resources[index++];
+          if (res) preconnect(res, next);
+        })();
+      }
+
+      function prefetch(url, as, callback) {
+        var link = document.createElement('link');
+        if (link.relList.supports('prefetch')) {
+          link.rel = 'prefetch';
+          link.fetchPriority = 'low';
+          link.as = as;
+          if (as === 'font') link.type = 'font/woff2';
+          link.href = url;
+          link.crossOrigin = '';
+          link.onload = link.onerror = callback;
+          document.head.appendChild(link);
+        } else {
+          var xhr = new XMLHttpRequest();
+          xhr.open('GET', url, true);
+          xhr.onloadend = callback;
+          xhr.send();
+        }
+      }
+
+      function prefetchAssets() {
+        var resources = [].concat(
+          scripts.map(function(url) { return [url, 'script']; }),
+          styles.map(function(url) { return [url, 'style']; }),
+          fontPrefetchUrls.map(function(url) { return [url, 'font']; }),
+          imgPrefetchUrls.map(function(url) { return [url, 'image']; })
+        );
+        var index = 0;
+        function run() {
+          var res = resources[index++];
+          if (res) prefetch(res[0], res[1], next);
+        }
+        var next = (self.requestIdleCallback || setTimeout).bind(self, run);
+        next();
+      }
+
+      function onLoaded() {
+        try {
+          if (parseFloat(navigator.connection.effectiveType) > 2 && !navigator.connection.saveData) {
+            preconnectAssets();
+            prefetchAssets();
+          }
+        } catch (e) {}
+      }
+
+      if (document.readyState === 'complete') {
+        onLoaded();
+      } else {
+        addEventListener('load', onLoaded);
+      }
+    })();
+  

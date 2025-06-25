@@ -34,7 +34,12 @@ router.get('/deleteBrand', adminAuth, brandCtrl.deleteBrand)
 router.get("/addProducts", productCtrl.getProductAddPage)
 router.post("/addProducts", uploads.array('images',3), productCtrl.addProducts)
 router.get('/products',productCtrl.getAllProducts);
-
+router.post('/addProductOffer', productCtrl.addProductOffer)
+router.post('/deleteProductOffer', productCtrl.deleteProductOffer);
+router.patch('/toggle-list/:id', productCtrl.toggleProductList);
+router.get('/editProduct',  productCtrl.getEditProduct);
+router.post("/editProduct/:id", uploads.array('images', 3), productCtrl.editProduct);
+router.post('/deleteImage', productCtrl.deleteSingleImage)
 
 
 module.exports = router;
