@@ -267,8 +267,7 @@
                                     <label for="brand" class="form-label">Brand</label>
                                     <select name="brand" class="form-select" id="brand">
                                         <% brand.forEach(function(brand) { %>
-                                            <option value="<%= brand.brandName %>"
-                                                <%= product.brand.toString() === brand._id.toString() ? 'selected' : '' %>>
+                                            <option value="<%= brand._id %>" <%= (product.brand && product.brand.toString() === brand._id.toString()) ? 'selected' : '' %>>
                                                 <%= brand.brandName %>
                                             </option>
                                         <% }); %>
@@ -300,13 +299,13 @@
                                 <div class="card-body">
                                     <div class="image-upload-container">
                                         <input type="file" 
-                                        id="imageUpload" 
-                                        name="images" 
-                                        class="form-control" 
-                                        accept="image/*" 
-                                        multiple
-                                        onchange="openCropperModal(event)">
-                                        
+                                            id="imageUpload" 
+                                            name="images" 
+                                            class="form-control" 
+                                            accept="image/jpeg,image/png,image/gif,image/webp" 
+                                            multiple 
+                                            onchange="openCropperModal(event)">
+                                                                                
                                         <!-- Hidden input to store cropped images -->
                                         <input type="hidden" id="deletedImagesInput" name="deletedImages" value="[]">
                                         
@@ -352,10 +351,12 @@
     </div>
 </div>
 
+<div id="product-data" data-images='<%- JSON.stringify(product.productImages) %>'></div>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.js" integrity="sha512-lR8d1BXfYQuiqoM/LeGFVtxFyspzWFTZNyYIiE5O2CcAGtTCRRUMLloxATRuLz8EmR2fYqdXYlrGh+D6TVGp3g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
-    let existingImages = <%- JSON.stringify(product.productImages || []) %>;
+    let existingImages = JSON.parse(document.getElementById('product-data').dataset.images)
     let deletedImages = [];
     let cropper;
     let croppedImagesCount = 0;
@@ -482,12 +483,12 @@
 
     const file = files[0];
 
-    const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!validTypes.includes(file.type)) {
         Swal.fire({
             icon: 'error',
             title: 'Invalid File Type',
-            text: 'Please upload a valid image (JPEG, PNG, or GIF)',
+            text: 'Please upload a valid image (JPEG, PNG, GIF, or WebP)',
             confirmButtonColor: '#3085d6'
         });
         return;
@@ -509,7 +510,6 @@
             minCropBoxHeight: 100
         });
 
-        
         document.getElementById('cropperModal').style.display = 'block';
     };
     reader.readAsDataURL(file);

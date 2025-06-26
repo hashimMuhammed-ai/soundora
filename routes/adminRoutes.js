@@ -16,20 +16,20 @@ router.get('/login',adminCtrl.getLogin);
 router.post('/login', adminCtrl.postLogin);
 router.get('/dashboard', adminAuth, adminAuth, adminCtrl.getDashboard);
 router.get('/logout', adminCtrl.logout);
-router.get('/customers', adminAuth, customerCtrl.customerInfo);
-router.post('/toggleBlock', adminAuth, customerCtrl.toggleBlock);
+router.get('/customers', customerCtrl.customerInfo);
+router.post('/toggleBlock', customerCtrl.toggleBlock);
 // Category Management
-router.get('/category', adminAuth, categoryCtrl.categoryInfo);
-router.post('/addCategory', adminAuth, categoryCtrl.addCategory);
-router.patch('/toggleCategory/:id', adminAuth, categoryCtrl.toggleCategory)
-router.get('/editCategory', adminAuth, categoryCtrl.getEditCategory);
-router.post('/editCategory/:id', adminAuth, categoryCtrl.editCategory)
+router.get('/category', categoryCtrl.categoryInfo);
+router.post('/addCategory', categoryCtrl.addCategory);
+router.patch('/toggleCategory/:id', categoryCtrl.toggleCategory)
+router.get('/editCategory', categoryCtrl.getEditCategory);
+router.post('/editCategory/:id', categoryCtrl.editCategory)
 // Brand Management
 router.get('/brands', brandCtrl.getBrandPage);
 router.post('/addBrand', uploads.single('image'), brandCtrl.addBrand)
-router.get('/blockBrand', adminAuth, brandCtrl.blockBrand)
-router.get('/unblockBrand', adminAuth, brandCtrl.unblockBrand)
-router.get('/deleteBrand', adminAuth, brandCtrl.deleteBrand)
+router.get('/blockBrand', brandCtrl.blockBrand)
+router.get('/unblockBrand', brandCtrl.unblockBrand)
+router.get('/deleteBrand', brandCtrl.deleteBrand)
 // Product Management
 router.get("/addProducts", productCtrl.getProductAddPage)
 router.post("/addProducts", uploads.array('images',3), productCtrl.addProducts)

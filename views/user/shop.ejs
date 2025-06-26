@@ -1,0 +1,1289 @@
+<%- include("../../views/partials/user/header") %>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="path/to/css/fontawesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <style>
+     
+    .product-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .product-card:hover {
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        transform: translateY(-10px);
+    }
+
+    .product-card__image {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .product-card__image img {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .product-card:hover .product-card__image img {
+        transform: scale(1.05);
+    }
+
+    .product-card__actions {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        z-index: 10;
+    }
+
+    .product-card__wishlist-btn {
+        background-color: rgba(255, 255, 255, 0.9);
+        color: #000;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .product-card__wishlist-btn:hover {
+        background-color: #000;
+        color: #fff;
+    }
+
+    .product-card__details {
+        padding: 15px;
+    }
+
+    .product-card__title {
+        font-weight: bold;
+        margin-bottom: 10px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: flex;
+        justify-content: center;
+    }
+
+    .product-card__pricing {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .product-card__sale-price {
+        font-weight: 700;
+        color: #000;
+        margin-right: 10px;
+    }
+
+    .product-card__regular-price {
+        text-decoration: line-through;
+        color: #888;
+        font-size: 0.9em;
+    }
+
+    .product-card__rating {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        justify-content: center;
+    }
+
+    .product-card__rating .fa-star {
+        color: #FFD700;
+        margin-right: 3px;
+    }
+
+    .product-card__rating .fa-star.active {
+        color: #FFD700;
+        /* Vibrant gold color */
+    }
+    
+
+    .product-card__rating-count {
+        color: #888;
+        font-size: 0.8em;
+        margin-left: 5px;
+    }
+
+    .product-card__cta {
+        width: 100%;
+    }
+
+    .product-card__cart-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 10px;
+        background-color: #000;
+        color: #fff;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+    }
+
+    .product-card__cart-btn i {
+        margin-right: 8px;
+    }
+
+    .product-card__cart-btn:hover {
+        background-color: #333;
+        transform: translateY(-2px);
+    }
+
+    /* Pagination Styles */
+    .shop-pagination .pagination {
+        margin-top: 30px;
+    }
+
+    .shop-pagination .page-link {
+        color: #000;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        margin: 0 5px;
+        padding: 10px 15px;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+    }
+
+    .shop-pagination .page-link:hover {
+        background-color: #000;
+        color: #fff;
+        border-color: #000;
+    }
+
+    .shop-pagination .page-item.active .page-link {
+        background-color: #000;
+        color: #fff;
+        border-color: #000;
+    }
+
+    /* Filter Sidebar Styles */
+    .shop-filter-sidebar {
+        background-color: #fff;
+        padding: 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .shop-filter-sidebar__section {
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .shop-filter-sidebar__section:last-child {
+        border-bottom: none;
+    }
+
+    .shop-filter-sidebar__title {
+        font-weight: 600;
+        font-size: 16px;
+        color: #333;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+    }
+
+    .shop-filter-sidebar__title i {
+        margin-right: 8px;
+        color: #666;
+    }
+
+    /* Search Input */
+    .shop-filter-sidebar__search {
+        margin-bottom: 10px;
+    }
+
+    .input-group {
+        display: flex;
+    }
+
+    .input-group input {
+        flex-grow: 1;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px 0 0 4px;
+    }
+
+    .input-group-append .btn {
+        padding: 8px 12px;
+        border-radius: 0 4px 4px 0;
+    }
+
+    /* Categories */
+    .shop-filter-sidebar__categories {
+        max-height: 250px;
+        overflow-y: auto;
+    }
+
+    .category-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .category-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .category-checkbox {
+        margin-right: 10px;
+    }
+    /* Base Styling for Custom Checkbox */
+    .custom-checkboxc{
+        display: flex;
+    align-items: center;
+    position: relative;
+    font-size: 1rem;
+    color: #333;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+    gap: 11px;
+    margin-bottom: 27px;
+    margin-top: 17px;
+    }
+.custom-checkbox {
+    display: flex;
+    align-items: center;
+    position: relative;
+    font-size: 1rem; /* Adjust font size */
+    color: #333; /* Dark text color */
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+    gap: 10px;
+}
+
+/* Hide Default Checkbox */
+.custom-checkbox input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+.custom-checkboxc input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* Custom Checkbox Look */
+.checkmark {
+    width: 20px;
+    height: 20px;
+    background: #eee; /* Light grey background */
+    border-radius: 5px; /* Rounded edges */
+    position: relative;
+    transition: all 0.3s ease;
+    border: 2px solid #ccc;
+}
+
+/* On Checkbox Checked */
+.custom-checkbox input:checked + .checkmark {
+    background: #000000ec; /* Change to primary color */
+    border-color: #000000;
+}
+.custom-checkboxc input:checked + .checkmark {
+    background: #000000ec; /* Change to primary color */
+    border-color: #000000;
+}
+
+/* Checkmark Tick */
+.checkmark::after {
+    content: "";
+    position: absolute; 
+    display: none;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
+}
+
+/* Show Checkmark When Checked */
+.custom-checkbox input:checked + .checkmark::after {
+    display: block;
+}
+.custom-checkboxc input:checked + .checkmark::after {
+    display: block;
+}
+
+/* Hover Effect */
+.custom-checkbox:hover .checkmark {
+    border-color: #000000;
+}
+.custom-checkboxc:hover .checkmark {
+    border-color: #000000;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .custom-checkbox {
+        font-size: 0.9rem;
+    }
+    .custom-checkboxc {
+        font-size: 0.9rem;
+    }
+    
+    .checkmark {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+
+    .category-item label {
+        flex-grow: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+    }
+
+    /* Price Range */
+    .shop-filter-sidebar__price-range {
+        margin-bottom: 10px;
+    }
+
+    .price-range-container {
+        width: 100%;
+    }
+
+    .price-range-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+
+    .price-range-wrapper {
+        position: relative;
+        width: 100%;
+        height: 5px;
+        background-color: #ddd;
+        border-radius: 3px;
+    }
+
+    .price-range-track {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+
+    .price-range-fill {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0;
+        height: 100%;
+        background-color: #000;
+        border-radius: 3px;
+    }
+
+    .price-range-slider input[type="range"] {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+
+        background: transparent;
+        pointer-events: none;
+    }
+
+    .price-range-slider input[type="range"]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 5px;
+        background: #ddd;
+        border-radius: 3px;
+    }
+
+    .price-range-slider input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 15px;
+        height: 15px;
+        background: #000;
+        cursor: pointer;
+        border-radius: 50%;
+        pointer-events: all;
+    }
+
+    .price-range-values {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        color: #666;
+        margin-top: 10px;
+    }
+
+    /* Apply Filters Button */
+    #apply-filters {
+        width: 100%;
+        padding: 10px;
+        margin-top: 10px;
+        background-color: #000;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    }
+
+    #apply-filters:hover {
+        background-color: #333;
+    }
+
+    /* Toast animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .toastify {
+        animation: fadeInUp 0.5s ease-in-out;
+    }
+
+    /* Green tick animation */
+    @keyframes tickPop {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+
+        50% {
+            transform: scale(1.3);
+            opacity: 1;
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .toastify-avatar {
+        width: 24px;
+        /* Adjust icon size */
+        height: 24px;
+        animation: tickPop 0.5s ease-in-out;
+    }
+
+    .custom-quantity-input {
+        display: flex;
+        align-items: center;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        overflow: hidden;
+        width: fit-content;
+    }
+
+    .quantity-btn {
+        background: #f8f9fa;
+        border: none;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.2s;
+    }
+
+    .quantity-btn:hover {
+        background: #e9ecef;
+    }
+
+    .quantity-value {
+        width: 40px;
+        text-align: center;
+        border: none;
+        border-left: 1px solid #ddd;
+        border-right: 1px solid #ddd;
+        padding: 8px 0;
+        font-size: 14px;
+    }
+
+    .quantity-value::-webkit-inner-spin-button,
+    .quantity-value::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* Mobile responsiveness additions */
+    .filter-toggle-btn {
+        display: none;
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        background-color: #000;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        font-weight: 600;
+        text-align: center;
+        cursor: pointer;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 992px) {
+        .filter-toggle-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .filter-toggle-btn i {
+            margin-right: 8px;
+        }
+
+        .shop__sidebar {
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        .shop__sidebar.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .product-card__image img {
+            height: 200px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .category-item label {
+            max-width: 150px;
+        }
+
+        .shop__product__option__left,
+        .shop__product__option__right {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .shop__product__option__right {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .shop__product__option__right p {
+            margin-right: 10px;
+            margin-bottom: 0;
+        }
+
+        .product-card {
+            margin-bottom: 20px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .product-card__image img {
+            height: 180px;
+        }
+
+        .shop-pagination .page-link {
+            padding: 8px 12px;
+            margin: 0 3px;
+        }
+    }
+    .brand-item {
+    display: flex;
+    align-items: center;
+    gap: 0px;
+    padding: 4px;
+}
+
+.brand-logo {
+    width: 40px; /* Adjust size */
+    height: 40px;
+    object-fit: contain;
+    border-radius: 5px;
+}
+
+    </style>
+    <section class="shop spad">
+        <div class="container">
+            <div class="row">
+                <!-- Mobile Filter Toggle Button -->
+                <div class="shop__sidebar__search" style="margin-left: 30px;">
+                    <form action="" method="post">
+                        <input type="text" placeholder="Search..." id="searchInput">
+                        <button type="submit"><i class="fa fa-search"></i></button>
+                    </form>
+                </div>
+                <div class="col-12">
+                    
+                    <button class="filter-toggle-btn" id="filterToggleBtn">
+                        <i class="fa fa-filter"></i> Show Filters
+                    </button>
+                </div>
+    
+                <!-- Filter Sidebar -->
+                <div class="col-lg-3">
+                    <div class="shop__sidebar" id="shopSidebar">
+                       
+                        <div class="shop__sidebar__accordion">
+                            <div class="accordion" id="accordionExample">
+                                <!-- Category -->
+                                <div class="card">
+                                    <div class="card-heading">
+                                        <a data-toggle="collapse" data-target="#collapseOne">Categories</a>
+                                    </div>
+                                    <div id="collapseOne" class="collapse show" data-parent="#accordionExample">
+                                        <div class="card-body">
+                                            <div class="shop__sidebar__categories">
+                                                <ul class="nice-scroll">
+                                                    <% if (category && category.length> 0) { %>
+                                                        <% for (let i=0; i < category.length; i++) { %>
+                                                            <li>
+                                                                <label class="custom-checkboxc">
+                                                                    <input type="checkbox" class="filter-category" value="<%= category[i]._id %>" />
+                                                                    <span class="checkmark"></span>
+                                                                    <%= category[i].name %>
+                                                                </label>
+                                                                
+                                                            </li>
+                                                        <% } %>
+                                                    <% } else { %>
+                                                        <li>No categories available</li>
+                                                    <% } %>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+    
+                                <!-- Brands -->
+                                <div class="card">
+                                    <div class="card-heading">
+                                        <a data-toggle="collapse" data-target="#collapseBrands">Brands</a>
+                                    </div>
+                                    <div id="collapseBrands" class="collapse show" data-parent="#accordionExample">
+                                        <div class="card-body">
+                                            <div class="shop__sidebar__categories">
+                                                <ul class="nice-scroll">
+                                                    <% if (brand && brand.length > 0) { %>
+                                                        <% for (let i = 0; i < brand.length; i++) { %>
+                                                            <li class="brand-item">
+                                                                <label class="custom-checkbox">
+                                                                    <input type="checkbox" class="filter-brand" value="<%= brand[i]._id %>" />
+                                                                    <span class="checkmark"></span>
+                                                                    <img src="/uploads/brands/<%= brand[i].brandImage %>" alt="<%= brand[i].brandName %>" class="brand-logo">
+                                                                    <%= brand[i].brandName %>
+                                                                </label>
+                                                            </li>
+                                                        <% } %>
+                                                    <% } else { %>
+                                                        <li>No brands available</li>
+                                                    <% } %>
+                                                </ul>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+    
+                                <!-- Price Filter -->
+                                <div class="card">
+                                    <div class="card-heading">
+                                        <a data-toggle="collapse" data-target="#collapseThree">Filter Price</a>
+                                    </div>
+                                    <div id="collapseThree" class="collapse show" data-parent="#accordionExample">
+                                        <div class="card-body">
+                                            <div class="shop__sidebar__price">
+                                                <ul>
+                                                    <li>
+                                                        <label>
+                                                            <input type="radio" name="filter-price" class="filter-price"
+                                                                value="500-1000" />
+                                                            ₹500 - ₹1000
+                                                        </label>
+                                                    </li>
+                                                    <li>
+                                                        <label>
+                                                            <input type="radio" name="filter-price" class="filter-price"
+                                                                value="1000-5000" />
+                                                            ₹1000 - ₹5000
+                                                        </label>
+                                                    </li>
+                                                    <li>
+                                                        <label>
+                                                            <input type="radio" name="filter-price" class="filter-price"
+                                                                value="5000-10000" />
+                                                            ₹5000 - ₹10000
+                                                        </label>
+                                                    </li>
+                                                    <li>
+                                                        <label>
+                                                            <input type="radio" name="filter-price" class="filter-price"
+                                                                value="10000-50000" />
+                                                            ₹10000 - ₹50000
+                                                        </label>
+                                                    </li>
+                                                    <li>
+                                                        <label>
+                                                            <input type="radio" name="filter-price" class="filter-price"
+                                                                value="50000-100000" />
+                                                            ₹50000 - ₹100000
+                                                        </label>
+                                                    </li>
+                                                    <li>
+                                                        <label>
+                                                            <input type="radio" name="filter-price" class="filter-price"
+                                                                value="100000-200000" />
+                                                            ₹100000 - ₹200000
+                                                        </label>
+                                                    </li>
+                                                    <li>
+                                                        <label>
+                                                            <input type="radio" name="filter-price" class="filter-price"
+                                                                value="200000-500000" />
+                                                            ₹500000+
+                                                        </label>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+    
+                                <!-- Apply Filter Button -->
+                                <div class="apply-filter">
+                                    <button id="applyFilter" class="btn" style="background-color: #0c0c0c; color: white;">
+                                        Apply Filter
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- Product Display Area -->
+                <div class="col-lg-9">
+                    <div class="shop__product__option">
+                        <div class="row">
+                            <div class="col-lg-6 col-md-6 col-sm-6">
+                                <div class="shop__product__option__left">
+                                    <p>Showing 1–12 of <strong><%= totalProducts %></strong> results</p>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-6">
+                                <div class="shop__product__option__right">
+                                    <p>Sort by :</p>
+                                    <select id="priceFilter" onchange="applyFilter()">
+                                        <option value="price-low-high">Price: Low to High</option>
+                                        <option value="price-high-low">Price: High to Low</option>
+                                        <option value="new-arrivals">New Arrivals</option>
+                                        <option value="a-z">A-Z</option>
+                                        <option value="z-a">Z-A</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row product__filter">
+                        <% if(products && products.length > 0) { %>
+                        <% for (let i=0; i < products.length; i++) { %>
+                            <div class="col-lg-4 col-md-6 col-sm-6 col-12 mb-4">
+                                <div class="product-card">
+                                    <div class="product-card__image">
+                                        <a href="/productDetails?id=<%= products[i]._id %>">
+                                            <img src="/uploads/product-images/<%= products[i].productImages[0] %>"
+                                                alt="<%= products[i].productName %>" class="img-fluid">
+                                        </a>
+                                        <div class="product-card__actions">
+                                            <a href="/addToWishlist?id=<%= products[i]._id %>"
+                                                class="product-card__wishlist-btn" title="Add to Wishlist">
+                                                <i class="fa-regular fa-heart"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="product-card__details">
+                                        <h6 class="product-card__title">
+                                            <%= products[i].productName %>
+                                        </h6>
+                                        <div class="product-card__pricing">
+                                            <span class="product-card__sale-price">
+                                                ₹<%= products[i].salePrice.toLocaleString('en-IN')%>
+                                            </span>
+                                            <span class="product-card__regular-price">
+                                                ₹<%= products[i].regularPrice.toLocaleString('en-IN') %>
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="product-card__rating">
+                                            <% for(let j=0; j < 5; j++) { %>
+                                                <i class="fa-solid fa-star <%= j < Math.round(products[i].rating || 0) ? 'active' : '' %>"></i>
+                                            <% } %>
+                                            <span class="product-card__rating-count">
+                                                (<%= products[i].rating || 0 %>/5)
+                                            </span>
+                                            <div>
+                                                <% if(products[i].quantity > 0){ %>
+                                                    <span style="color: rgb(0, 134, 18);">In Stock</span>
+                                                <% } else { %>
+                                                    <span style="color: red;">Out of stock</span>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                        <div class="product-card__cta">
+                                            <button onclick="addToCart('<%= products[i]._id %>','<%= products[i].finalPrice %>')"
+                                                class="product-card__cart-btn">
+                                                <i class="fa-solid fa-cart-plus"></i>
+                                                Add to Cart
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% } %>
+                        <% } else { %>
+                            <div class="col-12 text-center">
+                                <p>No products found</p>
+                            </div>
+                        <% } %>
+                    </div>
+    
+                    <!-- Pagination -->
+                    <div class="row">
+                        <div class="col-12">
+                            <nav aria-label="Product pagination" class="shop-pagination">
+                                <ul class="pagination justify-content-center">
+                                    <% for (let i = 1; i <= totalPages; i++) { %>
+                                        <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                                            <a class="page-link" href="#" onclick="applyFilter('<%= i %>')"><%= i %></a>
+                                        </li>
+                                    <% } %>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script>
+
+
+             // Filter toggle functionality for mobile
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterToggleBtn = document.getElementById('filterToggleBtn');
+        const shopSidebar = document.getElementById('shopSidebar');
+        
+        // Toggle filter visibility when button is clicked
+        filterToggleBtn.addEventListener('click', function() {
+            shopSidebar.classList.toggle('active');
+            
+            // Update button text based on sidebar visibility
+            if (shopSidebar.classList.contains('active')) {
+                filterToggleBtn.innerHTML = '<i class="fa fa-times"></i> Hide Filters';
+            } else {
+                filterToggleBtn.innerHTML = '<i class="fa fa-filter"></i> Show Filters';
+            }
+        });
+        
+        // Close filter on window resize if in desktop mode
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 992) {
+                shopSidebar.classList.remove('active');
+                filterToggleBtn.innerHTML = '<i class="fa fa-filter"></i> Show Filters';
+            }
+        });
+    });
+
+
+        async function addToCart(productId) {
+            try {
+                const response = await fetch('/addToCart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        productId: productId,
+                        quantity: 1
+                    })
+                });
+
+                const data = await response.json();
+
+
+                if (data.success) {
+                    Toastify({
+                        text: "Success\nProduct added to cart successfully",
+                        duration: 1500,
+                        close: true,
+                        gravity: "top",
+                        position: "right",
+                        stopOnFocus: true,
+                        style: {
+                            background: "#ffffff",
+                            color: "#28a745",
+                            boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.2)",
+                            padding: "12px 20px",
+                            borderRadius: "10px",
+                            borderLeft: "5px solid #28a745",
+                            fontSize: "14px",
+                            fontWeight: "bold",
+                            textAlign: "left",
+                            animation: "fadeInUp 0.5s ease-in-out"
+                        },
+                        avatar: "https://cdn-icons-png.flaticon.com/512/845/845646.png",
+                    }).showToast();
+                } else {
+                    // throw new Error(data.message || 'Login to add product to cart').then(() => {
+                    //     window.location.href = '/login';
+                    // });
+                    Toastify({
+                        text: "Error\n" + data.message || 'Login to add product to cart',
+                        duration: 1500,
+                        close: true,
+                        gravity: "top",
+                        position: "right",
+                        stopOnFocus: true,
+                        style: {
+                            background: "#ffffff", // 
+                            color: "#dc3545",
+                            boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.2)",
+                            padding: "12px 20px",
+                            borderRadius: "10px",
+                            borderLeft: "5px solid #dc3545",
+                            fontSize: "14px",
+                            fontWeight: "bold",
+                            textAlign: "left",
+                            animation: "fadeInUp 0.5s ease-in-out"
+                        },
+                        avatar: "https://cdn-icons-png.flaticon.com/512/190/190406.png",
+                    }).showToast()
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Toastify({
+                    text: "Error\n" + error.message || 'Login to add product to cart',
+                    duration: 1500,
+                    close: true,
+                    gravity: "top",
+                    position: "right",
+                    stopOnFocus: true,
+                    style: {
+                        background: "#ffffff", // 
+                        color: "#dc3545",
+                        boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.2)",
+                        padding: "12px 20px",
+                        borderRadius: "10px",
+                        borderLeft: "5px solid #dc3545",
+                        fontSize: "14px",
+                        fontWeight: "bold",
+                        textAlign: "left",
+                        animation: "fadeInUp 0.5s ease-in-out"
+                    },
+                    avatar: "https://cdn-icons-png.flaticon.com/512/190/190406.png",
+                }).showToast();
+            }
+        }
+
+
+        
+
+        async function applyFilter(page = 1) {
+            try {
+                // Show loading state
+                const productContainer = document.querySelector(".product__filter");
+                productContainer.innerHTML = '<div class="col-12 text-center">Loading...</div>';
+
+                // Gather filter values
+                const selectedCategories = Array.from(document.querySelectorAll('.filter-category:checked')).map(cb => cb.value);
+                const selectedBrands = Array.from(document.querySelectorAll('.filter-brand:checked')).map(cb => cb.value);
+                const selectedPrice = document.querySelector('.filter-price:checked')?.value || "";
+                const sortBy = document.querySelector(".shop__product__option__right select").value;
+                const searchQuery = document.querySelector(".shop__sidebar__search input").value.trim()
+
+                const response = await fetch('/filter', {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        categories: selectedCategories,
+                        priceRange: selectedPrice,
+                        brands: selectedBrands,
+                        sortBy,
+                        searchQuery,
+                        page
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    renderProducts(data.products);
+                    updatePagination(data.currentPage, data.totalPages);
+                    updateProductCount(data.totalProducts);
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                console.error("Filter error:", error);
+                showErrorMessage("Failed to apply filters. Please try again.");
+            }
+        }
+
+        document.querySelector(".shop__sidebar__search form").addEventListener("submit", function (e) {
+            e.preventDefault(); // Prevent page reload
+            applyFilter(); // Trigger filtering when searching
+        });
+
+
+       function renderProducts(products) {
+          const productContainer = document.querySelector(".product__filter");
+          productContainer.innerHTML = "";
+          if (products.length === 0) {
+              productContainer.innerHTML = `
+                  <div class="col-12 text-center">
+                      <p class="my-5">No products found matching your criteria.</p>
+                  </div>`;
+              return;
+          }
+          products.forEach(product => {
+              const productHTML = `
+                  <div class="col-lg-4 col-md-6 col-sm-6 col-6 mb-4">
+                      <div class="product-card">
+                          <div class="product-card__image">
+                              <a href="/productDetails?id=${product._id}">
+                                  <img src="${product.productImages && product.productImages.length > 0 ? '/Uploads/product-images/' + product.productImages[0] : '/path/to/default-image.jpg'}" 
+                                      alt="${product.productName || 'Product'}" 
+                                      class="img-fluid">
+                              </a>
+                              <div class="product-card__actions">
+                                  <a href="javascript:void(0);" onclick="addToWishlist('${product._id}')" 
+                                    class="product-card__wishlist-btn" 
+                                    title="Add to Wishlist">
+                                      <i class="fa-regular fa-heart"></i>
+                                  </a>
+                              </div>
+                          </div>
+                          <div class="product-card__details">
+                              <h6 class="product-card__title">${product.productName || 'Unnamed Product'}</h6>
+                              <div class="product-card__pricing" style="display: flex; justify-content: center;">
+                                  <span class="product-card__sale-price">
+                                      ₹${(product.finalPrice || product.salePrice || 0).toLocaleString('en-IN')}
+                                  </span>
+                                  <span class="product-card__regular-price">
+                                      ₹${(product.regularPrice || 0).toLocaleString('en-IN')}
+                                  </span>
+                              </div>
+                              <div style="color: red; font-weight: bold;display: flex;justify-content: center;font-weight:bold;">
+                                  ${product.productOffer || 0}% OFF  
+                                  <div>
+                                      ${product.quantity > 0 
+                                          ? '<span style="color: rgb(0, 134, 18);margin-left: 10px;">In Stock</span>'
+                                          : '<span style="color: red;margin-left: 10px;">Out of stock</span>'
+                                      }
+                                  </div>
+                              </div>
+                              <div class="product-card__cta">
+                                  <button onclick="addToCart('${product._id}')" 
+                                          class="product-card__cart-btn">
+                                      <i class="fa-solid fa-cart-plus"></i
+                                      Add to Cart
+                                  </button>
+                              </div>
+                          </div>
+                      </div>
+                  </div>`;
+              productContainer.innerHTML += productHTML;
+          });
+      }
+
+        function generateRatingStars(rating) {
+            let starsHTML = '';
+            for (let i = 0; i < 5; i++) {
+                starsHTML += `<i class="fa-solid fa-star ${i < Math.round(rating || 0) ? 'active' : ''}"></i>`;
+            }
+            return starsHTML;
+        }
+
+        function updatePagination(currentPage, totalPages) {
+            const paginationContainer = document.querySelector('.shop-pagination .pagination');
+            let paginationHTML = '';
+
+            if (currentPage > 1) {
+                paginationHTML += `
+            <li class="page-item">
+                <a class="page-link" href="javascript:void(0)" onclick="applyFilter(${currentPage - 1})" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>`;
+            }
+
+            for (let i = 1; i <= totalPages; i++) {
+                paginationHTML += `
+            <li class="page-item ${i === currentPage ? 'active' : ''}">
+                <a class="page-link" href="javascript:void(0)" onclick="applyFilter(${i})">${i}</a>
+            </li>`;
+            }
+
+            if (currentPage < totalPages) {
+                paginationHTML += `
+            <li class="page-item">
+                <a class="page-link" href="javascript:void(0)" onclick="applyFilter(${currentPage + 1})" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>`;
+            }
+
+            paginationContainer.innerHTML = paginationHTML;
+        }
+
+        function updateProductCount(totalProducts) {
+            const countElement = document.querySelector('.shop__product__option__left p');
+            if (countElement) {
+                countElement.textContent = `Showing 1–12 of 20 results`;
+            }
+        }
+
+        function showErrorMessage(message) {
+            Toastify({
+                text: message,
+                duration: 3000,
+                close: true,
+                gravity: "top",
+                position: "right",
+                style: {
+                    background: "#ffffff",
+                    color: "#dc3545",
+                    boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.2)",
+                    padding: "12px 20px",
+                    borderRadius: "10px",
+                    borderLeft: "5px solid #dc3545"
+                }
+            }).showToast();
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function () {
+            // Filter button click
+            document.getElementById('applyFilter').addEventListener('click', applyFilter);
+
+            // Sort select change
+            const sortSelect = document.querySelector('.shop__product__option__right select');
+            if (sortSelect) {
+                sortSelect.addEventListener('change', applyFilter);
+            }
+
+            // Load initial products
+            applyFilter();
+        });
+
+        function changePage(page) {
+            // Update current page and reapply filters
+            document.querySelector('input[name="page"]').value = page;
+            applyFilter();
+        }
+
+
+
+        async function addToWishlist(productId){
+            try {
+                const response = await fetch("/addToWishlist",{
+                    method:"POST",
+                    headers:{"Content-Type":"application/json"},
+                    body:JSON.stringify({productId})
+                })
+
+                
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    showErrorMessage('You loged first then add to Wishlist');
+                    return;
+                }
+
+                const data = await response.json();
+
+                if(data.success){
+                    Toastify({
+                        text: "Success\nProduct added to wishlist successfully",
+                        duration: 2000,
+                        close: true,
+                        gravity: "top",
+                        position: "right",
+                        stopOnFocus: true,
+                        style: {
+                            background: "#ffffff",
+                            color: "#28a745",
+                            boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.2)",
+                            padding: "12px 20px",
+                            borderRadius: "10px",
+                            borderLeft: "5px solid #28a745",
+                            fontSize: "14px",
+                            fontWeight: "bold",
+                            textAlign: "left",
+                            animation: "fadeInUp 0.5s ease-in-out"
+                        },
+                        avatar: "https://cdn-icons-png.flaticon.com/512/845/845646.png",
+                    }).showToast();
+                }else {
+                    throw new Error(data.message || 'Failed to add product to Wishlist');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+               
+                Toastify({
+                    text: "Error\n" + error || 'Failed to add product to Wishlist',
+                    duration: 2000,
+                    close: true, 
+                    gravity: "top", 
+                    position: "right", 
+                    stopOnFocus: true, 
+                    style: {
+                        background: "#ffffff", 
+                        color: "#dc3545", 
+                        boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.2)", 
+                        padding: "12px 20px",
+                        borderRadius: "10px",
+                        borderLeft: "5px solid #dc3545", 
+                        fontSize: "14px",
+                        fontWeight: "bold",
+                        textAlign: "left",
+                        animation: "fadeInUp 0.5s ease-in-out" 
+                    },
+                    avatar: "https://cdn-icons-png.flaticon.com/512/190/190406.png", 
+                }).showToast();
+            }
+        }
+
+    </script>
+
+    <%- include("../../views/partials/user/footer") %>

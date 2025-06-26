@@ -1,19 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const userCtrl = require('../controllers/user/userController');
+const productCtrl = require('../controllers/user/productController');
 const passport = require('passport');
 const profileCtrl = require('../controllers/user/profileController');
 
 
 
 router.get('/pageNotFound', userCtrl.pageNotFound);
+router.get('/', userCtrl.loadHompage);
 router.get('/signup', userCtrl.getSignup);
 router.post('/signup', userCtrl.postSignup);
 router.post('/verify-otp', userCtrl.verifyOtp);
 router.post('/resend-otp', userCtrl.resendOtp);
 router.get('/auth/google', passport.authenticate('google',{scope: ['profile', 'email']}));
 router.get('/auth/google/callback', passport.authenticate('google', {failureRedirect: '/signup'}),(req,res)=>{
-  res.redirect('/home');
+  res.redirect('/');
 })
 router.get('/login', userCtrl.getLogin);
 router.post('/login', userCtrl.postLogin);
@@ -25,5 +27,13 @@ router.post("/verify-passForgot-otp", profileCtrl.verifyForgotPassOtp);
 router.get("/reset-password", profileCtrl.getResetPassPage);
 router.post("/resend-forgot-otp", profileCtrl.resendtOTP)
 router.post("/reset-password", profileCtrl.postNewPassword)
+
+// Shop 
+router.get("/shop", userCtrl.loadShoppingPage)
+router.post("/filter", userCtrl.filterProducts);
+
+// Product Management
+
+router.get('/productDetails', productCtrl.productDetails);
 
 module.exports = router;

@@ -1,4 +1,7 @@
 const User = require('../../models/userModel');
+const Category = require('../../models/categoryModel');
+const Product = require('../../models/productModel');
+const Brand = require('../../models/brandModel');
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 
@@ -11,6 +14,38 @@ const pageNotFound = (req, res) => {
     console.log(error);
   }
 }
+
+
+const loadHompage = async (req, res) => {
+   try {
+      const user = req.session.user;
+      const categories = await Category.find({ isListed: true })
+      const brands = await Brand.find({isBlocked:false})  
+      
+      let productData = await Product.find({
+         isListed: true,
+         category: { $in: categories.map(category => category._id) }, 
+         brand: { $in: brands.map(brand => brand._id) },
+         quantity: { $gt: 0 }
+      })
+      .populate("category")
+      .populate("brand")
+      .sort({ createdOn: -1 }).limit(8)
+      
+
+      if (user) {
+         const userData = await User.findById(user);
+         return res.render('user/home', { user: userData, products: productData ,brands:brands});
+      } else {
+         return res.render('user/home', { products: processedProducts,brands:brands})
+      }
+      
+   } catch (error) {
+      console.log('error loading home page');
+      res.status(500).send('Internal server error');
+   }
+}
+
 
 const getSignup = (req, res) => {
   try {
@@ -136,7 +171,7 @@ const getLogin = (req, res) => {
       const error = req.flash('error');
       res.render('user/login',{error: error[0]});
     }else {
-      res.redirect('/home')
+      res.redirect('/')
     }
   }
   catch (error) {
@@ -160,7 +195,7 @@ const postLogin = async (req, res) => {
       return res.redirect('/login');
     }
     req.session.user = user._id;
-    res.redirect('/home');
+    res.redirect('/');
   }
   catch (error) {
     console.log('Login Error',error);
@@ -170,5 +205,138 @@ const postLogin = async (req, res) => {
 }
 
 
+const loadShoppingPage = async (req, res) => {
+   try {
+      const user = req.session.user;
+      const categories = await Category.find({ isListed: true })   
+      const brands = await Brand.find({isBlocked: false})
 
-module.exports = {pageNotFound, getSignup, postSignup, verifyOtp, resendOtp, getLogin, postLogin};
+      const userData = await User.findOne({ _id: user });
+      const page = parseInt(req.query.page) || 1;
+      const limit = 6
+      const skip = (page - 1) * limit;
+      
+      const query = {
+         isListed: true,
+         quantity: { $gt: 0 }
+      }
+
+      const products = await Product.find(query) 
+      .populate('category')
+      .sort({ createdAt: 1 }).skip(skip).limit(limit)
+
+      const totalProducts = await Product.countDocuments({
+         isListed: true,
+         quantity: { $gt: 0 }
+      })
+
+      const totalPages = Math.ceil(totalProducts / limit);
+      const categoriesWithIds = categories.map(category => ({
+         _id: category._id.toString(),
+         name: category.name,
+         description: category.description,
+      }));
+      const brandsWithIds = brands.map(brand => ({
+         _id: brand._id.toString(),
+         brandName: brand.brandName,
+         brandImage: brand.brandImage
+      }));
+
+      res.render('user/shop', {
+         user: userData,
+         products: products,
+         categories: categoriesWithIds,
+         brands: brandsWithIds,
+         category: categories, 
+         brand: brands,
+         totalProducts: totalProducts,
+         currentPage: page,
+         totalPages: totalPages,
+      })
+
+   } catch (error) {
+      console.log("load Shop Page error", error);
+      res.status(500).render('error', { message: "Failed to load shop page" });
+   }
+}
+
+
+const filterProducts = async (req, res) => {
+   try {
+       const { categories, priceRange, searchQuery, sortBy, page = 1 } = req.body;
+       const limit = 6; 
+       const skip = (page - 1) * limit;
+
+       let filter = { 
+           isListed: true,
+           quantity: { $gt: 0 } 
+       };
+
+       const listedCategories = await Category.find({ isListed: true }).lean()
+       const listedBrands = await Brand.find({ isBlocked: false }).lean()
+
+       if (categories && categories.length > 0) {
+           const filteredCategories = listedCategories.filter((cat) => 
+               categories.includes(cat._id.toString())
+           );
+           filter.category = { $in: filteredCategories.map(cat => cat._id), $ne: null };
+       }
+
+       if (req.body.brands && req.body.brands.length > 0) {
+           const filteredBrands = listedBrands.filter((brand) => 
+               req.body.brands.includes(brand._id.toString())
+           );
+           filter.brand = { $in: filteredBrands.map(brand => brand._id), $ne: null };
+       }
+
+       if (priceRange) {
+           const [min, max] = priceRange.split('-').map(Number);
+           filter.salePrice = max ? { $gte: min, $lte: max } : { $gte: min };
+       }
+
+       if (searchQuery) {
+           filter.productName = { $regex: searchQuery, $options: 'i' };
+       }
+
+       let query = Product.find(filter).populate('category').skip(skip).limit(limit);
+
+       if (sortBy) {
+           switch (sortBy) {
+               case 'price-low-high':
+                   query = query.sort({ salePrice: 1 });
+                   break;
+               case 'price-high-low':
+                   query = query.sort({ salePrice: -1 });
+                   break;
+               case 'new-arrivals':
+                   query = query.sort({ createdAt: -1 });
+                   break;
+               case 'a-z':
+                   query = query.sort({ productName: 1 });
+                   break;
+               case 'z-a':
+                   query = query.sort({ productName: -1 });
+                   break;
+           }
+       }
+
+       const products = await query.exec();
+       const totalProducts = await Product.countDocuments(filter);
+
+       res.json({
+           success: true,
+           products: products,
+           totalProducts: totalProducts,
+           totalPages: Math.ceil(totalProducts / limit),
+           currentPage: page
+       });
+
+   } catch (error) {
+       console.log("error filtering products", error);
+       res.status(500).json({ success: false, message: "Internal server error" });
+   }
+};
+
+
+
+module.exports = {pageNotFound, loadHompage, getSignup, postSignup, verifyOtp, resendOtp, getLogin, postLogin, loadShoppingPage, filterProducts};

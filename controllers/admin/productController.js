@@ -32,11 +32,10 @@ const addProducts = async (req, res) => {
          if (req.files && req.files.length > 0) {
             for (let i = 0; i < req.files.length; i++) {
                const originalImagePath = req.files[i].path;
-               const resizedImagePath = path.join("public", "uploads", "product-images", `resized-${req.files[i].filename}`);
+               const resizedImagePath = path.join("public", "Uploads", "product-images", `${req.files[i].filename}`);
 
                try {
                   await sharp(originalImagePath)
-                     .resize({ width: 440, height: 440 })
                      .toFile(resizedImagePath);
                   images.push(req.files[i].filename);
                } catch (imgError) {
@@ -87,12 +86,27 @@ const addProducts = async (req, res) => {
             });
          }
 
+         // Clean and convert regularPrice and salePrice to numbers
+         const regularPrice = parseFloat(products.regularPrice.replace(/,/g, ''));
+         const salePrice = parseFloat(products.salePrice ? products.salePrice.replace(/,/g, '') : products.regularPrice.replace(/,/g, ''));
+
+         // Validate that prices are valid numbers
+         if (isNaN(regularPrice) || isNaN(salePrice)) {
+            const category = await Category.find({ isListed: true });
+            const brand = await Brand.find({ isBlocked: false });
+            return res.render('admin/product-add', { 
+               cat: category, 
+               brand: brand, 
+               message: "Invalid price format"
+            });
+         }
+
          const newProduct = new Product({
             productName: products.productName,
             description: products.description,
             category: categoryId._id,
-            regularPrice: products.regularPrice,
-            salePrice: products.salePrice || products.regularPrice, 
+            regularPrice: regularPrice,
+            salePrice: salePrice || regularPrice, 
             discountPrice: products.discountPrice,
             productImages: images,
             isListed: products.isListed !== undefined ? products.isListed : true, 
@@ -323,7 +337,7 @@ const editProduct = async (req, res) => {
          });
       }
 
-      const brand = await Brand.findOne({ brandName: data.brand });
+      const brand = await Brand.findById(data.brand);
       if (!brand) {
          return res.status(400).json({
             success: false,
@@ -343,14 +357,14 @@ const editProduct = async (req, res) => {
                'public',
                'Uploads',
                'product-images',
-               `resized-${req.files[i].filename}`
+               `${req.files[i].filename}`
             );
 
             await sharp(originalImagePath)
                .resize({ width: 440, height: 440 })
                .toFile(resizedImagePath);
 
-            newImages.push(`resized-${req.files[i].filename}`);
+            newImages.push(`${req.files[i].filename}`);
          }
       }
 
@@ -422,7 +436,7 @@ const deleteSingleImage = async (req, res) => {
       console.log('Product images after deletion:', imageRemoved.productImages)
 
 
-const adjustedImageName = imageNameToServer.startsWith('resized-') ? imageNameToServer : `resized-${imageNameToServer}`;
+const adjustedImageName = imageNameToServer.startsWith('resized-') ? imageNameToServer : `${imageNameToServer}`;
 const imagePaths = [
     path.join("public", "uploads", "product-images", adjustedImageName), // Use adjusted name
     path.join("public", "uploads", "re-image", adjustedImageName),

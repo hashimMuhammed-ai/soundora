@@ -1,0 +1,885 @@
+<%- include("../../views/partials/user/header") %>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="path/to/css/fontawesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/elegant-icons.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css">
+
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script> -->
+    <style>
+        /* Product Card Styles */
+        .product-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 16px;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
+        }
+
+        .product-card__image {
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-card__image img {
+            width: 100%;
+            height: 269px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover .product-card__image img {
+            transform: scale(1.05);
+        }
+
+        .product-card__image .label {
+            color: #111111;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            display: inline-block;
+            padding: 4px 15px 2px;
+            background: #ffffff;
+            position: absolute;
+            left: 0;
+            top: 20px;
+        }
+
+        .hero__items {
+    background-size: cover; /* Ensures the image covers the container */
+    background-position: center; /* Centers the image */
+    background-repeat: no-repeat; /* Prevents repetition */
+    width: 100%; /* Full width */
+    min-height: 600px; /* Set a minimum height (adjust based on your design) */
+    position: relative; /* Ensures proper layering */
+}
+
+.set-bg {
+    background-size: cover !important; /* Use cover to fill the container */
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    height: 100%; /* Match the parent height */
+    width: 100%; /* Match the parent width */
+}
+
+.owl-carousel .hero__items {
+    overflow: hidden; /* Hides any overflow */
+}
+
+@media (max-width: 768px) {
+    .hero__items {
+        min-height: 400px; /* Reduced height for smaller screens */
+    }
+}
+
+        .product-card__actions {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 10;
+        }
+
+        .product-card__wishlist-btn {
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #000;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .product-card__wishlist-btn:hover {
+            background-color: #000;
+            color: #fff;
+        }
+
+        .product-card__details {
+            padding: 15px;
+        }
+
+        .product-card__title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            justify-content: center;
+        }
+
+        .product-card__pricing {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            justify-content: center;
+        }
+
+        .product-card__sale-price {
+            font-weight: 700;
+            color: #000;
+            margin-right: 10px;
+        }
+
+        .product-card__regular-price {
+            text-decoration: line-through;
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        .product-card__rating {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            justify-content: center;
+        }
+
+        .product-card__rating .fa-star {
+            color: #FFD700;
+            margin-right: 3px;
+        }
+
+        .product-card__rating .fa-star.active {
+            color: #FFD700;
+            /* Vibrant gold color */
+        }
+
+        .product-card__rating-count {
+            color: #888;
+            font-size: 0.8em;
+            margin-left: 5px;
+        }
+
+        .product-card__cta {
+            width: 100%;
+        }
+
+        .product-card__cart-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 10px;
+            background-color: #000;
+            color: #fff;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .product-card__cart-btn i {
+            margin-right: 8px;
+        }
+
+        .product-card__cart-btn:hover {
+            background-color: #333;
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .toastify {
+            animation: fadeInUp 0.5s ease-in-out;
+        }
+
+        /* Green tick animation */
+        @keyframes tickPop {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.3);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .toastify-avatar {
+            width: 24px;
+            /* Adjust icon size */
+            height: 24px;
+            animation: tickPop 0.5s ease-in-out;
+        }
+
+        .image-container {
+            display: flex;
+            justify-content: center;
+            /* Center images horizontally */
+            gap: 10px;
+            /* Add space between images */
+            flex-wrap: wrap;
+            /* Ensures responsiveness */
+        }
+
+        .image-container img {
+            width: 100px;
+            /* Adjust size as needed */
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 80vh;
+            /* Medium size for laptop screens */
+            max-height: 600px;
+            /* Limits the video size on large screens */
+            overflow: hidden;
+        }
+
+        /* Video should fit the container */
+        .video-container video {
+            width: 100%;
+            height: 150%;
+            object-fit: cover;
+        }
+
+        /* Overlay for text */
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1;
+            /* Ensures text stays above the video */
+            background: linear-gradient(to bottom,
+                    rgba(0, 0, 0, 0.4) 0%,
+                    rgba(0, 0, 0, 0.1) 50%,
+                    rgba(0, 0, 0, 0.4) 100%);
+            /* Subtle gradient overlay for depth */
+            pointer-events: none;
+            /* Ensures clicks pass through to the link */
+        }
+
+        /* Styling the title */
+        .video-title {
+            color: #fff;
+            /* White text for contrast */
+            font-family: 'Montserrat', sans-serif;
+            /* Modern and sleek font */
+            font-size: 3.5rem;
+            /* Slightly larger for impact */
+            font-weight: 900;
+            /* Extra bold for a premium feel */
+            text-transform: uppercase;
+            /* Uppercase for luxury */
+            letter-spacing: 3px;
+            /* Wider spacing for elegance */
+            text-shadow:
+                0 0 10px rgba(0, 0, 0, 0.9),
+                2px 2px 6px rgba(0, 0, 0, 0.7);
+            /* Enhanced shadow for depth */
+            padding: 20px 40px;
+            /* Wider padding for a bold look */
+            background: linear-gradient(135deg,
+                    rgba(255, 215, 0, 0.2),
+                    /* Gold accent */
+                    rgba(0, 0, 0, 0.5)
+                    /* Dark luxury */
+                );
+            /* Gradient background for sophistication */
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            /* Subtle gold border */
+            border-radius: 8px;
+            /* Slightly more rounded for refinement */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            /* Soft shadow for elevation */
+            transition: all 0.3s ease;
+            /* Smooth hover animation */
+            animation: fadeIn 1.5s ease-in-out;
+            /* Entrance animation */
+        }
+
+        .video-title:hover {
+            transform: scale(1.05);
+            /* Slight scale-up */
+            background: linear-gradient(135deg,
+                    rgba(255, 215, 0, 0.4),
+                    rgba(0, 0, 0, 0.7));
+            /* Brighter gradient on hover */
+            border-color: rgba(255, 215, 0, 0.6);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.03);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Full-screen effect for large screens (Laptops & Desktops) */
+        @media (min-width: 1200px) {
+            .video-container {
+                height: 100vh;
+                /* Full screen on larger laptops */
+                max-height: 400px;
+                margin-top: 106px;
+            }
+
+            .video-title {
+                font-size: 4rem;
+                /* Larger for big screens */
+                padding: 25px 50px;
+                /* More spacious */
+            }
+        }
+
+        /* Adjusting video for tablets */
+        @media (max-width: 1024px) {
+            .video-container {
+                height: 60vh;
+                /* Medium size for tablets */
+            }
+
+            .video-title {
+                font-size: 2.5rem;
+                /* Adjust font size for tablets */
+            }
+        }
+
+        /* Optimized Mobile View */
+        @media (max-width: 768px) {
+            .video-container {
+                margin-top: 50px;
+                height: 40vh;
+                /* Smaller size for mobile */
+            }
+
+            .video-title {
+                font-size: 2rem;
+                /* Smaller for mobile */
+                padding: 10px 20px;
+                letter-spacing: 2px;
+            }
+        }
+    </style>
+
+
+    <!-- Hero Section Begin -->
+    <section class="hero">
+        <div class="hero__slider owl-carousel">
+            <div class="hero__items set-bg" data-setbg="img/hero/hero-1.jpg">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-xl-5 col-lg-7 col-md-8">
+                            <div class="hero__text">
+                                <h6>SUMMER SOUND COLLECTION</h6>
+                                <h2>Soundora – Premium Audio for 2025</h2>
+                                <p>Engineered to perfection. Experience crystal-clear sound with our latest Bluetooth speakers and soundbars. Built for audiophiles. Designed for life.</p>
+                                <a href="/shop" class="primary-btn" style="background-color: white;color: black;">Shop
+                                    now
+                                </a>
+                                <div class="hero__social">
+                                    <a href="#"><i class="fa-brands fa-facebook" style="color: #ffffff;"></i></a>
+                                    <a href="#"><i class="fa-brands fa-twitter" style="color: #ffffff;"></i></a>
+                                    <a href="#"><i class="fa-brands fa-pinterest" style="color: #ffffff;"></i></a>
+                                    <a href="#"><i class="fa-brands fa-instagram" style="color: #ffffff;"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero__items set-bg" data-setbg="img/hero/hero-2.jpg">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-xl-5 col-lg-7 col-md-8">
+                            <div class="hero__text">
+                                <h6>FALL / WINTER AUDIO LINE</h6>
+                                <h2>Refined Sound – Winter Collection 2025</h2>
+                                <p>Experience rich, immersive sound with our premium speaker range. Crafted for audiophiles who value clarity, depth, and design.</p>
+                                <a href="/shop" class="primary-btn" style="background-color: white;color: black;">Shop
+                                    now </a>
+                                <div class="hero__social">
+                                    <a href="#"><i class="fa-brands fa-facebook" style="color: #ffffff;"></i></a>
+                                    <a href="#"><i class="fa-brands fa-twitter" style="color: #ffffff;"></i></a>
+                                    <a href="#"><i class="fa-brands fa-pinterest" style="color: #ffffff;"></i></a>
+                                    <a href="#"><i class="fa-brands fa-instagram" style="color: #ffffff;"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Hero Section End -->
+    <a href="/shop">
+        <div class="video-container">
+            <video autoplay muted loop playsinline>
+                <source src="/img/speaker-video.mp4" type="video/mp4">
+            </video>
+            <div class="video-overlay">
+                <h1 class="video-title">FEEL THE POWER OF SOUND</h1>
+            </div>
+        </div>
+    </a>
+    <!-- Banner Section Begin -->
+    <section class="banner spad">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-7 offset-lg-4">
+                    <div class="banner__item">
+                        <div class="banner__item__pic">
+                            <img src="img/banner/banner-1.jpg" alt="" style="
+                            display: block;
+                            height: auto;
+                            object-fit: cover;
+                            width: 464px;
+                            margin-bottom: 50px;
+                            border-radius: 25px;
+                        ">
+                        </div>
+                        <div id="myElement" class="banner__item__text">
+                            <h2 style="margin-right: 30px;">Speaker Collections 2025</h2>
+                            <a href="/shop">Shop now</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="banner__item banner__item--middle">
+                        <div class="banner__item__pic">
+                            <img src="img/banner/banner-2.jpg" alt="" style="border-radius: 25px;">
+                        </div>
+                        <div class="banner__item__text">
+                            <h2>Retro Speakers</h2>
+                            <a href="/shop">Shop now</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- <div class="col-lg-7">
+                    <div class="banner__item banner__item--last">
+                        <div class="banner__item__pic">
+                            <img src="img/banner/banner-3.jpg" alt="" style="    height: auto;
+                                height: auto;
+                                object-fit: cover;
+                                width: 464px;
+                                margin-right: 84px; 
+                                border-radius: 25px;">
+                        </div>
+                        <div class="banner__item__text2">
+                            <h2 style="margin-left: 93px;">Legend Watches </h2>
+                            <a href="/shop" style="    margin-left: 97px;">Shop now</a>
+                        </div>
+                    </div>
+                </div> -->
+            </div>
+        </div>
+    </section>
+    <!-- Banner Section End -->
+
+    <!-- Categories Section Begin -->
+    <section class="categories spad">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-3">
+                    <div class="categories__text">
+                        <h2>Best Deals <br /> <span>Wireless Audio</span> <br /> Accessories</h2>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="categories__hot__deal">
+                        <img src="img/product-sale.png" alt="">
+                        <div class="hot__deal__sticker">
+                            <span>Sale Of</span>
+                            <h5>₹7,999</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 offset-lg-1">
+                    <div class="categories__deal__countdown">
+                        <span>Deal Of The Week</span>
+                        <h2>boAt Nirvana Space Spatial </h2>
+                        <div class="categories__deal__countdown__timer" id="countdown">
+                            <div class="cd-item">
+                                <span>3</span>
+                                <p>Days</p>
+                            </div>
+                            <div class="cd-item">
+                                <span>1</span>
+                                <p>Hours</p>
+                            </div>
+                            <div class="cd-item">
+                                <span>50</span>
+                                <p>Minutes</p>
+                            </div>
+                            <div class="cd-item">
+                                <span>18</span>
+                                <p>Seconds</p>
+                            </div>
+                        </div>
+                        <a href="/shop" class="primary-btn">Shop now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Section Begin -->
+    <section class="product spad">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <ul class="filter__controls">
+                        <li data-filter=".new-arrivals">New Arrivals</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row product__filter">
+                <% for (let i=0; i < products.length; i++) { %>
+                    <!-- <div class="col-lg-3 col-md-4 col-12 col-sm-6"> -->
+                    <div class="col-lg-3 col-md-4 col-sm-6 col-6">
+                        <div class="product-card">
+                            <div class="product-card__image">
+                                <a href="/productDetails?id=<%= products[i]._id %>">
+                                    <img src="/uploads/product-images/<%= products[i].productImages[0] %>"
+                                        alt="<%= products[i].productName %>" class="img-fluid">
+                                    <span class="label">New</span>
+                                </a>
+                                <div class="product-card__actions">
+                                    <a href="javascript:void(0);" onclick="addToWishlist('<%= products[i]._id %>')"
+                                        class="product-card__wishlist-btn" title="Add to Wishlist">
+                                        <i class="fa-regular fa-heart"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="product-card__details">
+
+                                <h6 class="product-card__title">
+                                    <%= products[i].productName %>
+                                </h6>
+                                <div class="product-card__pricing">
+                                    <span class="product-card__sale-price">
+                                        ₹<%= products[i].salePrice %>
+                                    </span>
+                                    <span class="product-card__regular-price">
+                                        ₹<%= products[i].regularPrice %>
+                                    </span>
+
+                                </div>
+                                <div
+                                    style="color: red; font-weight: bold;font-weight: bold;display: flex;justify-content: center;">
+                                    <%=products[i].productOffer %>%OFF
+                                </div>
+                                <div>
+                                    <% if(products[i].quantity> 0){ %>
+                                        <span
+                                            style="color: rgb(0, 134, 18);display: flex;justify-content: center;font-weight: bold;">In
+                                            Stock</span>
+                                        <% } else { %>
+                                            <span style="color: red;">Out of stock</span>
+                                            <% } %>
+                                </div>
+                                <div class="product-card__rating">
+                                    <% for(let j=0; j < 5; j++) { %>
+                                        <i
+                                            class="fa-solid fa-star <%= j < Math.round(products[i].rating || 0) ? 'active' : '' %>"></i>
+                                        <% } %>
+                                            <span class="product-card__rating-count">
+                                                (5/5)
+                                            </span>
+                                </div>
+                                <button onclick="addToCart('<%= products[i]._id %>')" class="product-card__cart-btn">
+                                    <i class="fa-solid fa-cart-plus"></i> Add to Cart
+                                </button>
+
+                            </div>
+                        </div>
+                    </div>
+                    <% } %>
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Section End -->
+
+
+    <!-- Categories Section End -->
+
+    <!-- Brands Section Begin -->
+    <a href="/shop">
+        <div class="image-container" style="
+                display: flex;
+                justify-content: center;
+                gap: 80px;
+                flex-wrap: wrap;
+                margin-top: 48px;">
+
+            <div class="col-lg-12">
+                <ul class="filter__controls">
+                    <li data-filter=".new-arrivals">BRANDS</li>
+                </ul>
+            </div>
+            <% brands.forEach(brand=> { %>
+                <img src="/uploads/brands/<%= brand.brandImage %>" alt="<%= brand.brandName %>" style="    width: 210px;
+                height: 183px;">
+                <% }); %>
+        </div>
+    </a>
+    <!-- Brands Section End -->
+
+
+    <!-- Instagram Section Begin -->
+    <section class="instagram spad" style="margin-bottom: 70px;">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="instagram__pic">
+                        <div class="instagram__pic__item">
+                            <img src="img/instagram/instagram-1.jpg" alt="Watch Image">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="instagram__text">
+                        <h2>Explore It....</h2>
+                        <p>Great sound brings people together. Whether you're hosting a party, chilling solo, or working on the go — our speakers deliver deep bass, crisp highs, and immersive clarity. It's not just sound, it’s an experience.</p>
+                        <h3>#SoundVibes</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+    <script>
+
+        async function addToWishlist(productId) {
+            try {
+                const response = await fetch("/addToWishlist", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ productId })
+                })
+
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    showErrorMessage('You loged first then add to Wishlist');
+                    return;
+                }
+
+
+
+                const data = await response.json();
+
+                if (data.success) {
+                    Toastify({
+                        text: "Success\nProduct added to wishlist successfully",
+                        duration: 2000,
+                        close: true,
+                        gravity: "top",
+                        position: "right",
+                        stopOnFocus: true,
+                        style: {
+                            background: "#ffffff",
+                            color: "#28a745",
+                            boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.2)",
+                            padding: "12px 20px",
+                            borderRadius: "10px",
+                            borderLeft: "5px solid #28a745",
+                            fontSize: "14px",
+                            fontWeight: "bold",
+                            textAlign: "left",
+                            animation: "fadeInUp 0.5s ease-in-out"
+                        },
+                        avatar: "https://cdn-icons-png.flaticon.com/512/845/845646.png",
+                    }).showToast();
+                } else {
+                    throw new Error(data.message || 'Failed to add product to Wishlist');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+
+                Toastify({
+                    text: "Error\n" + error || 'Failed to add product to Wishlist',
+                    duration: 2000,
+                    close: true,
+                    gravity: "top",
+                    position: "right",
+                    stopOnFocus: true,
+                    style: {
+                        background: "#ffffff",
+                        color: "#dc3545",
+                        boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.2)",
+                        padding: "12px 20px",
+                        borderRadius: "10px",
+                        borderLeft: "5px solid #dc3545",
+                        fontSize: "14px",
+                        fontWeight: "bold",
+                        textAlign: "left",
+                        animation: "fadeInUp 0.5s ease-in-out"
+                    },
+                    avatar: "https://cdn-icons-png.flaticon.com/512/190/190406.png",
+                }).showToast();
+            }
+        }
+
+        async function addToCart(productId) {
+
+            try {
+                const response = await fetch('/addToCart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+
+                    body: JSON.stringify({
+                        productId: productId,
+                        quantity: 1
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+
+                    Toastify({
+                        text: "Success\nProduct added to cart successfully",
+                        duration: 2000,
+                        close: true,
+                        gravity: "top",
+                        position: "right",
+                        stopOnFocus: true,
+                        style: {
+                            background: "#ffffff",
+                            color: "#28a745",
+                            boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.2)",
+                            padding: "12px 20px",
+                            borderRadius: "10px",
+                            borderLeft: "5px solid #28a745",
+                            fontSize: "14px",
+                            fontWeight: "bold",
+                            textAlign: "left",
+                            animation: "fadeInUp 0.5s ease-in-out"
+                        },
+                        avatar: "https://cdn-icons-png.flaticon.com/512/845/845646.png",
+                    }).showToast();
+
+                } else {
+                    throw new Error(data.message || 'Failed to add product to cart');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+
+                Toastify({
+                    text: "Error\n" + error || 'Failed to add product to cart',
+                    duration: 2000,
+                    close: true,
+                    gravity: "top",
+                    position: "right",
+                    stopOnFocus: true,
+                    style: {
+                        background: "#ffffff",
+                        color: "#dc3545",
+                        boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.2)",
+                        padding: "12px 20px",
+                        borderRadius: "10px",
+                        borderLeft: "5px solid #dc3545",
+                        fontSize: "14px",
+                        fontWeight: "bold",
+                        textAlign: "left",
+                        animation: "fadeInUp 0.5s ease-in-out"
+                    },
+                    avatar: "https://cdn-icons-png.flaticon.com/512/190/190406.png",
+                }).showToast();
+            }
+        }
+
+        function showErrorMessage(message) {
+            Toastify({
+                text: message,
+                duration: 3000,
+                close: true,
+                gravity: "top",
+                position: "right",
+                style: {
+                    background: "#ffffff",
+                    color: "#dc3545",
+                    boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.2)",
+                    padding: "12px 20px",
+                    borderRadius: "10px",
+                    borderLeft: "5px solid #dc3545"
+                }
+            }).showToast();
+        }
+
+        $(document).ready(function () {
+
+            $('.set-bg').each(function() {
+            var bg = $(this).attr('data-setbg');
+            $(this).css('background-image', 'url(' + bg + ')');
+        });
+
+            if ($('.hero__slider').hasClass('owl-loaded')) {
+                $('.hero__slider').owlCarousel('destroy');
+            }
+
+            $('.hero__slider').owlCarousel({
+                loop: true,
+                margin: 0,
+                items: 1,
+                dots: true,
+                nav: false,
+                animateOut: 'fadeOut',
+                animateIn: 'fadeIn',
+                smartSpeed: 1200,
+                autoHeight: true,
+                autoplay: true,
+                autoplayTimeout: 5000, // 5 seconds per slide
+                autoplayHoverPause: true
+            });
+
+            console.log('Owl Carousel initialized with autoplay and 5-second interval');
+        });
+    </script>
+
+    <%- include("../../views/partials/user/footer") %>
