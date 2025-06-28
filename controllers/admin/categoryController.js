@@ -1,36 +1,43 @@
 const Category = require('../../models/categoryModel');
 
 
-
 const categoryInfo = async (req, res) => {
   try {
+    const search = req.query.search || '';
     const page = parseInt(req.query.page) || 1;
     const limit = 4;
     const skip = (page - 1) * limit;
 
-    const categoryData = await Category.find({})
-      .sort({createdAt: -1})
-      .skip(skip)
-      .limit(limit)
+    const searchQuery = { name: { $regex: search, $options: 'i' } };
+        
 
-      const totalCategories = await Category.countDocuments();
-      const totalPages = Math.ceil(totalCategories / limit);
-      res.render('admin/category',{
-        cat: categoryData,
-        currentPage: page,
-        totalPages,
-        totalCategories
-      });
+    const categoryData = await Category.find(searchQuery)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const totalCategories = await Category.countDocuments(searchQuery);
+    const totalPages = Math.ceil(totalCategories / limit);
+
+    res.render('admin/category', {
+      cat: categoryData,
+      currentPage: page,
+      totalPages,
+      totalCategories,
+      search 
+    });
   } catch (error) {
-      console.error(error);
-      res.redirect('/pageError');
+    console.error('Error loading category info:', error);
+    res.redirect('/pageError');
   }
-}
+};
+
 
 const addCategory = async (req, res) => {
   try {
     const {name, description, categoryOffer} = req.body;
-    const existingCategory = await Category.findOne({name});
+    const categoryName = name.trim();
+    const existingCategory = await Category.findOne({ name: { $regex: `^${categoryName}$`, $options: 'i' } });
     if(existingCategory){
       return res.status(400).json({error: 'Category already exists'});
     }

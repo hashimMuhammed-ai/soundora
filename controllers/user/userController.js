@@ -18,6 +18,7 @@ const pageNotFound = (req, res) => {
 
 const loadHompage = async (req, res) => {
    try {
+    console.log('sjgsajdg');
       const user = req.session.user;
       const categories = await Category.find({ isListed: true })
       const brands = await Brand.find({isBlocked:false})  
@@ -32,12 +33,13 @@ const loadHompage = async (req, res) => {
       .populate("brand")
       .sort({ createdOn: -1 }).limit(8)
       
-
-      if (user) {
-         const userData = await User.findById(user);
+     
+      const userId = user || req.user?._id;
+       if (userId) {
+         const userData = await User.findById(userId);
          return res.render('user/home', { user: userData, products: productData ,brands:brands});
       } else {
-         return res.render('user/home', { products: processedProducts,brands:brands})
+         return res.render('user/home', { products: productData,brands:brands})
       }
       
    } catch (error) {
@@ -338,5 +340,21 @@ const filterProducts = async (req, res) => {
 };
 
 
+const logout = async (req, res) => {
+   try {
+      req.session.destroy((err) => {
+         if (err) {
+            console.log('session destruction error', err);
+            return res.redirect('/')
+         }
+         return res.redirect('/login')
+      })
+   } catch (error) {
+      console.log("logout error", error);
+      res.redirect('/pageNotFound')
+   }
+}
 
-module.exports = {pageNotFound, loadHompage, getSignup, postSignup, verifyOtp, resendOtp, getLogin, postLogin, loadShoppingPage, filterProducts};
+
+
+module.exports = {pageNotFound, loadHompage, getSignup, postSignup, verifyOtp, resendOtp, getLogin, postLogin, loadShoppingPage, filterProducts, logout};

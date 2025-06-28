@@ -18,13 +18,20 @@ app.use(express.static('public'));
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   cookie: {
     secure: false,
     httpOnly: true,
     maxAge: 72*60*60*1000
   }
 }));
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.set('Pragma', 'no-cache');   // For older HTTP/1.0 proxies
+  res.set('Expires', '0');         // Make sure it expires immediately
+  next();
+});
+
 app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
@@ -42,6 +49,8 @@ app.use((req, res, next)=>{
   res.locals.error = req.flash('error');
   next();
 })
+
+
 
 const adminRoutes = require('./routes/adminRoutes');
 const userRoutes = require('./routes/userRoutes');

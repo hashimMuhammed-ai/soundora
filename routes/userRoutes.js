@@ -4,36 +4,39 @@ const userCtrl = require('../controllers/user/userController');
 const productCtrl = require('../controllers/user/productController');
 const passport = require('passport');
 const profileCtrl = require('../controllers/user/profileController');
+const {userLoginAuth, userAuth} = require('../middlewares/auth');
 
 
 
 router.get('/pageNotFound', userCtrl.pageNotFound);
-router.get('/', userCtrl.loadHompage);
-router.get('/signup', userCtrl.getSignup);
-router.post('/signup', userCtrl.postSignup);
-router.post('/verify-otp', userCtrl.verifyOtp);
-router.post('/resend-otp', userCtrl.resendOtp);
+router.get('/', userAuth, userCtrl.loadHompage);
+router.get('/signup', userLoginAuth, userCtrl.getSignup);
+router.post('/signup', userLoginAuth, userCtrl.postSignup);
+router.post('/verify-otp', userLoginAuth,  userCtrl.verifyOtp);
+router.post('/resend-otp', userLoginAuth, userCtrl.resendOtp);
 router.get('/auth/google', passport.authenticate('google',{scope: ['profile', 'email']}));
 router.get('/auth/google/callback', passport.authenticate('google', {failureRedirect: '/signup'}),(req,res)=>{
+  req.session.user = req.user._id;
   res.redirect('/');
 })
-router.get('/login', userCtrl.getLogin);
-router.post('/login', userCtrl.postLogin);
+router.get('/login', userLoginAuth, userCtrl.getLogin);
+router.post('/login', userLoginAuth, userCtrl.postLogin);
 
 // Profile Management
-router.get("/forgot-password", profileCtrl.getForgotPassPage);
-router.post("/forgot-email-valid", profileCtrl.forgotEmailValid)
-router.post("/verify-passForgot-otp", profileCtrl.verifyForgotPassOtp);
-router.get("/reset-password", profileCtrl.getResetPassPage);
-router.post("/resend-forgot-otp", profileCtrl.resendtOTP)
-router.post("/reset-password", profileCtrl.postNewPassword)
+router.get("/forgot-password", userLoginAuth,  profileCtrl.getForgotPassPage);
+router.post("/forgot-email-valid", userLoginAuth, profileCtrl.forgotEmailValid)
+router.post("/verify-passForgot-otp", userLoginAuth, profileCtrl.verifyForgotPassOtp);
+router.get("/reset-password", userLoginAuth, profileCtrl.getResetPassPage);
+router.post("/resend-forgot-otp", userLoginAuth, profileCtrl.resendtOTP)
+router.post("/reset-password", userLoginAuth, profileCtrl.postNewPassword)
 
 // Shop 
-router.get("/shop", userCtrl.loadShoppingPage)
-router.post("/filter", userCtrl.filterProducts);
+router.get("/shop", userAuth, userCtrl.loadShoppingPage)
+router.post("/filter", userAuth,  userCtrl.filterProducts);
+router.get('/logout', userAuth, userCtrl.logout)
 
 // Product Management
 
-router.get('/productDetails', productCtrl.productDetails);
+router.get('/productDetails', userAuth, productCtrl.productDetails);
 
 module.exports = router;

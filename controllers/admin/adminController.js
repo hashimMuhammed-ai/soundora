@@ -11,7 +11,7 @@ const pageError = async (req, res) => {
 const getLogin = (req, res) => {
   try {
     if(req.session.admin){
-      return res.redirect('admin/dashboard');
+      return res.redirect('/admin/dashboard');
     }
     res.render('admin/login');
   }

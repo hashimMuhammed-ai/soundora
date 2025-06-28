@@ -7,6 +7,14 @@ const adminAuth = (req, res, next) => {
   }
 }
 
+const adminLoginAuth = (req, res, next) => {
+  if(!req.session.admin){
+    next()
+  }else {
+    res.redirect('/admin/dashboard')
+  }
+}
+
 const userAuth = (req, res, next) => {
   if(req.session.user){
     next();
@@ -16,4 +24,13 @@ const userAuth = (req, res, next) => {
   }
 }
 
-module.exports = {adminAuth, userAuth};
+
+const userLoginAuth = (req, res, next) => {
+  if(!req.session.user){
+    next();
+  }else {
+    res.redirect('/');
+  }
+}
+
+module.exports = {adminAuth, userAuth, adminLoginAuth, userLoginAuth};

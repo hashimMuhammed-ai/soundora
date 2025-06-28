@@ -227,6 +227,17 @@
     </div>
 
     <div class="category-container">
+      <!-- Search Bar -->
+            <div class="search-container">
+                <form method="GET" action="/admin/category">
+                    <div class="input-group">
+                        <input type="text" name="search" value="<%= search || '' %>" id="searchInput" class="form-control" placeholder="Search by category name" 
+                            style="height: 40px;width: 272px;padding: 10px;">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                    
+                </form>
+            </div>
       <!-- Add Category Form -->
       <div class="category-form">
         <h4 class="mb-4">Add New Category</h4>
@@ -372,16 +383,16 @@
         isValid = false;
       }
 
-      if(!categoryOfferInput.value.trim()){
-        showError('category-offer-error', 'Category offer is required');
-        isValid = false;
-      }else{ 
-         const offerValue = parseFloat(categoryOfferInput.value.trim());
-         if (isNaN(offerValue) || offerValue < 0 || offerValue > 100) {
-         showError('category-offer-error', 'Category offer must be a number between 0 and 100');
-         isValid = false;
-        }
-      }
+      // if(!categoryOfferInput.value.trim()){
+      //   showError('category-offer-error', 'Category offer is required');
+      //   isValid = false;
+      // }else{ 
+      //    const offerValue = parseFloat(categoryOfferInput.value.trim());
+      //    if (isNaN(offerValue) || offerValue < 0 || offerValue > 100) {
+      //    showError('category-offer-error', 'Category offer must be a number between 0 and 100');
+      //    isValid = false;
+      //   }
+      // }
 
       if (isValid) {
         // const formData = new FormData();
