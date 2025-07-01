@@ -5,6 +5,9 @@ const productCtrl = require('../controllers/user/productController');
 const passport = require('passport');
 const profileCtrl = require('../controllers/user/profileController');
 const {userLoginAuth, userAuth} = require('../middlewares/auth');
+const multer = require('multer');
+const storage = require('../helpers/multer');
+const uploads = multer({storage: storage});
 
 
 
@@ -28,7 +31,17 @@ router.post("/forgot-email-valid", userLoginAuth, profileCtrl.forgotEmailValid)
 router.post("/verify-passForgot-otp", userLoginAuth, profileCtrl.verifyForgotPassOtp);
 router.get("/reset-password", userLoginAuth, profileCtrl.getResetPassPage);
 router.post("/resend-forgot-otp", userLoginAuth, profileCtrl.resendtOTP)
-router.post("/reset-password", userLoginAuth, profileCtrl.postNewPassword)
+router.post("/reset-password", userLoginAuth, profileCtrl.postNewPassword);
+router.get('/userProfile', profileCtrl.getUserProfile);
+router.post('/update-profile',  uploads.single('profileImage'), profileCtrl.updateProfile);
+router.get('/change-password', profileCtrl.getChangePassword);
+
+// Address Management
+router.get('/address', profileCtrl.getUserAddress);
+router.get('/addAddress', profileCtrl.getAddAddress);
+router.post('/addAddress', profileCtrl.postAddAddress);
+router.post('/editAddress', profileCtrl.postEditAddress);
+router.post('/deleteAddress', profileCtrl.deleteAddress);
 
 // Shop 
 router.get("/shop", userAuth, userCtrl.loadShoppingPage)

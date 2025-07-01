@@ -18,7 +18,6 @@ const pageNotFound = (req, res) => {
 
 const loadHompage = async (req, res) => {
    try {
-    console.log('sjgsajdg');
       const user = req.session.user;
       const categories = await Category.find({ isListed: true })
       const brands = await Brand.find({isBlocked:false})  
@@ -94,6 +93,7 @@ async function sendVerificationEmail(email, otp){
 const postSignup = async (req, res) => {
   try {
     const {name, email, phone, password} = req.body;
+    console.log(typeof(phone) );
     const userExist = await User.findOne({email})
     if(userExist){
       req.flash('error', 'Email Already Existed');

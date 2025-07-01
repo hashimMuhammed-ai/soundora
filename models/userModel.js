@@ -40,6 +40,9 @@ const userSchema = new Schema({
     type: Boolean,
     default: false
   },
+  profileImage: { 
+    type: String 
+  },
   cart: [{
     type: Schema.Types.ObjectId,
     ref: 'Cart'

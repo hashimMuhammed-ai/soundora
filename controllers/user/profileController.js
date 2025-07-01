@@ -2,7 +2,10 @@ const User = require('../../models/userModel');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 const env = require('dotenv').config()
-const session = require('express-session')
+const session = require('express-session');
+const Address = require('../../models/addressModel');
+const multer = require('multer');
+const storage = require('../../helpers/multer');
 
 
 
@@ -171,6 +174,202 @@ const postNewPassword = async (req, res) => {
 }
 
 
+const getUserProfile = async (req, res) => {
+    try {
+        const userId = req.session.user;
+        const user = await User.findById(userId);
+        res.render('user/profile', {user, orders: [], totalPages: 1, wallet: {transactions: []}})
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+
+const getUserAddress = async (req, res) => {
+    try {
+        const userId = req.session.user;
+        const userAddress = await Address.findOne({userId});
+        if(userAddress){
+            res.render('user/address', {userAddress})
+        }
+        
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+const getAddAddress = async (req, res) => {
+    try {
+        res.render('user/add-address');
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+const postAddAddress = async (req, res) => {
+    try {
+        const {addressType, name, city, landMark, state, pincode, phone, altPhone} = req.body;
+        const userId = req.session.user;
+        const userAddress = await Address.findOne({userId});
+        if(userAddress){
+            userAddress.address.push({
+                addressType,
+                name,
+                city,
+                landMark,
+                state,
+                pincode,
+                phone,
+                altPhone
+            });
+            await userAddress.save();
+        } else {
+            await Address.create({userId,address: [{
+                addressType,
+                name,
+                city,
+                landMark,
+                state,
+                pincode,
+                phone,
+                altPhone
+            }]})
+        }
+        res.json({success: true, message: 'Address Added Successfully'})
+
+    } catch (error) {
+        console.error('Error in Adding Address',error);
+        res.status(500).json({success: false, message: 'Something Went Wrong!'});
+    }
+}
+
+
+const postEditAddress = async (req,res) => {
+    try {
+        const addressId = req.query.id;
+        const {
+            addressType,
+            name,
+            city,
+            state,
+            landMark,
+            pincode,
+            phone,
+            altPhone
+        } = req.body;
+        const userId = req.session.user;
+        const userAddress = await Address.findOne({userId});
+        if(!userAddress){
+            return res.status(404).json({success: false, message: 'Address record not found'})
+        }
+        const addressItem = userAddress.address.id(addressId);
+        if(!addressItem){
+            return res.status(404).json({success: false, message: 'Address Not Found'})
+        }
+        addressItem.addressType = addressType;
+        addressItem.name = name;
+        addressItem.city = city;
+        addressItem.state = state;
+        addressItem.landMark = landMark;
+        addressItem.pincode = pincode;
+        addressItem.phone = phone;
+        addressItem.altPhone = altPhone;
+        await userAddress.save();
+        res.json({success: true, message: 'Address Updated Successfully'});
+    } catch (error) {
+        console.error('Error Updating Error', error);
+        res.status(500).json({success: false, message: 'Server Error'})
+    }
+}
+
+
+const deleteAddress = async (req, res) => {
+    try {
+        const { addressId } = req.body;
+        const userId = req.session.user;
+        const userAddress = await Address.findOne({userId});
+        if(!userAddress){
+            return res.status(404).json({success: false, message: 'Address record not found'})
+        }
+        const addressItem = userAddress.address.id(addressId);
+        if(!addressItem){
+            return res.status(404).json({success: false, message: 'Address not found'});
+        }
+        userAddress.address.pull({_id: addressId});
+        await userAddress.save();
+        res.json({success: true, message: 'Address Deleted Successfully'})
+    } catch (error) {
+        console.error('Error Deleting Address', error);
+        res.status(500).json({success: false, message: 'Server Error'})
+    }
+}
+
+
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    const filetypes = /jpeg|jpg|png|webp/;
+    const mimetype = filetypes.test(file.mimetype);
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    if (mimetype && extname) {
+      return cb(null, true);
+    }
+    cb(new Error('Only JPEG, PNG, and WebP files are allowed'));
+  },
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+}).single('profileImage');
+
+// Update Profile Route
+const updateProfile = async (req, res) => {
+  try {
+    console.log('lllllllllllllllllllllllllllllllllllllllll')
+    console.log('helloooooooooooooooooooooooo');
+
+
+      const { name, phone } = req.body;
+      const userId = req.session.user; // Assuming user ID is stored in session
+
+      // Validate inputs
+      if (!name || !phone) {
+        return res.json({ success: false, message: 'Name and phone are required' });
+      }
+      if (!/^\d{10}$/.test(phone)) {
+        return res.json({ success: false, message: 'Invalid phone number' });
+      }
+
+      // Prepare update data
+      const updateData = { name, phone };
+      if (req.file) {
+        updateData.profileImage = req.file.filename;
+      }
+
+      // Update user in database
+      console.log('hhhhhhhoiiiiiii',updateData);
+      const user = await User.findByIdAndUpdate(
+        userId,
+        updateData,
+        { new: true, runValidators: true }
+      );
+
+      if (!user) {
+        return res.json({ success: false, message: 'User not found' });
+      }
+
+      res.json({ success: true, message: 'Profile updated successfully', user });
+    ;
+  } catch (error) {
+    console.error('Update Profile Error:', error);
+    res.json({ success: false, message: 'Server error' });
+  }
+};
+
+const getChangePassword = async (req, res) => {
+    try {
+        res.render('user/change-password')
+    } catch (error) {
+        console.log(error);
+    }
+}
 
 
 module.exports = {
@@ -179,5 +378,13 @@ module.exports = {
     verifyForgotPassOtp,
     getResetPassPage,
     resendtOTP,
-    postNewPassword
+    postNewPassword,
+    getUserProfile,
+    getUserAddress,
+    getAddAddress,
+    postAddAddress,
+    postEditAddress,
+    deleteAddress,
+    updateProfile,
+    getChangePassword
 }

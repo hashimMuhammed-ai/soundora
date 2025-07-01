@@ -1,0 +1,493 @@
+<%- include("../../views/partials/user/header") %>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+  <style>
+    /* Modal Styles */
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      overflow-y: auto;
+      /* Allows scrolling if content is too big */
+    }
+
+    .modal-content {
+      background-color: #fff;
+      padding: 25px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      /* Prevents overflowing */
+      overflow-y: auto;
+      /* Enables scrolling within the modal */
+      position: relative;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 24px;
+      cursor: pointer;
+      color: #aaa;
+    }
+
+    .close-btn:hover {
+      color: #000;
+    }
+
+    .modal-title {
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+
+    .save-btn {
+      background-color: #000;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      width: 100%;
+      margin-top: 10px;
+      /* Ensures space above the button */
+    }
+
+    .save-btn:hover {
+      background-color: #333;
+    }
+
+    .error-message {
+      font-size: 12px;
+      margin-top: 2px;
+    }
+  </style>
+
+  <!-- Breadcrumb Section Begin -->
+  <section class="breadcrumb-option">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="breadcrumb__text">
+            <h4><i class="fa fa-address-book"></i> Addresses</h4>
+            <div class="breadcrumb__links">
+              <a href="/">Home</a>
+              <a href="/userProfile">Profile</a>
+              <span>Addresses</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <div class="container mt-4" style="margin-bottom: 220px;">
+    <a href="/userProfile" style="font-size: 24px; color: black;">
+      <i class="fa fa-arrow-left" id="back-button"></i>
+    </a>
+
+    <h2 class="mb-4">My Addresses</h2>
+
+    <% if (userAddress && userAddress.address.length> 0) { %>
+      <div class="row">
+        <% userAddress.address.forEach((address, index)=> { %>
+          <div class="col-md-4 mb-2" id="address-<%= address._id %>">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">
+                  <%= address.addressType %> : Address
+                </h5>
+              </div>
+              <div class="card-body">
+                <p><strong>Name:</strong>
+                  <%= address.name %>
+                </p>
+                <p><strong>City:</strong>
+                  <%= address.city %>
+                </p>
+                <p><strong>Landmark:</strong>
+                  <%= address.landMark %>
+                </p>
+                <p><strong>State:</strong>
+                  <%= address.state %>
+                </p>
+                <p><strong>Pincode:</strong>
+                  <%= address.pincode %>
+                </p>
+                <p><strong>Phone:</strong>
+                  <%= address.phone %>
+                </p>
+                <% if (address.altPhone) { %>
+                  <p><strong>Alt. Phone:</strong>
+                    <%= address.altPhone %>
+                  </p>
+                  <% } %>
+                    <div class="mt-3">
+                      <button type="button" class="btn btn-outline-dark"
+                        onclick="openEditAddressModal('<%= address._id %>')">
+                        <i class="fas fa-edit me-2"></i>Edit
+                      </button>
+                      <button type="button" onclick="return confirmDelete('<%= address._id %>')"
+                        class="btn btn-sm  ml-2" style="background-color: #c10000; color: white;">Delete
+                      </button>
+                    </div>
+              </div>
+            </div>
+          </div>
+          <% }); %>
+      </div>
+      <% } else { %>
+        <p>You haven't added any addresses yet.</p>
+        <% } %>
+
+          <div class="mt-4">
+            <a href="/addAddress" class="btn " style="background-color: #000000; color: white;">Add New
+              Address</a>
+          </div>
+  </div>
+
+  <div id="editAddressModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal()">&times;</span>
+      <h2 class="modal-title">Edit Address</h2>
+      <form id="editAddressForm">
+        <div class="form-group" style="max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+
+          <label for="addressType">Address Type</label>
+          <input type="text" id="edit_addressType" name="addressType" placeholder="Address Type (e.g., Home, Office)">
+          <small class="error-message" id="error_addressType"></small>
+
+          <label for="name">Name</label>
+          <input type="text" id="edit_name" name="name" placeholder="Full Name">
+          <small class="error-message" id="error_name"></small>
+
+          <label for="city">City</label>
+          <input type="text" id="edit_city" name="city" placeholder="City">
+          <small class="error-message" id="error_city"></small>
+
+          <label for="state">State</label>
+          <input type="text" id="edit_state" name="state" placeholder="State">
+          <small class="error-message" id="error_state"></small>
+
+          <label for="landMark">Landmark</label>
+          <input type="text" id="edit_landMark" name="landMark" placeholder="Landmark">
+          <small class="error-message" id="error_landMark"></small>
+
+          <label for="pincode">Pincode</label>
+          <input type="text" id="edit_pincode" name="pincode" placeholder="Pincode">
+          <small class="error-message" id="error_pincode"></small>
+
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="edit_phone" name="phone" placeholder="Phone Number">
+          <small class="error-message" id="error_phone"></small>
+
+          <label for="altPhone">Alternative Phone Number (Optional)</label>
+          <input type="tel" id="edit_altPhone" name="altPhone" placeholder="Alternative Phone Number (Optional)">
+          <small class="error-message" id="error_altPhone"></small>
+
+        </div>
+
+        <input type="hidden" id="edit_address_id" name="address_id">
+
+        <button type="submit" class="save-btn">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    const sanitizeQuotes = (string) => {
+      if (typeof string !== 'string') return string;
+      return string.replace(/'/g, '"');
+    }
+
+    // Function to Open Modal with address data
+    function openEditAddressModal(addressId) {
+      const addresses = JSON.parse(sanitizeQuotes('<%- JSON.stringify(userAddress.address) %>'));
+      const address = addresses.find(addr => addr._id === addressId);
+
+      if (address) {
+        document.getElementById("edit_addressType").value = address.addressType || '';
+        document.getElementById("edit_name").value = address.name || '';
+        document.getElementById("edit_city").value = address.city || '';
+        document.getElementById("edit_state").value = address.state || '';
+        document.getElementById("edit_landMark").value = address.landMark || '';
+        document.getElementById("edit_pincode").value = address.pincode || '';
+        document.getElementById("edit_phone").value = address.phone || '';
+        document.getElementById("edit_altPhone").value = address.altPhone || '';
+        document.getElementById("edit_address_id").value = address._id;
+
+        const form = document.getElementById("editAddressForm");
+
+
+        form.removeEventListener("submit", handleEditAddressSubmit);
+        form.addEventListener("submit", handleEditAddressSubmit);
+
+
+        const modal = document.getElementById("editAddressModal");
+        modal.style.display = "flex";
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    async function handleEditAddressSubmit(event) {
+      event.preventDefault();
+
+      let isValid = true;
+
+      function showError(inputId, message) {
+        document.getElementById("error_" + inputId).textContent = message;
+        document.getElementById("error_" + inputId).style.color = "red";
+      }
+
+      function clearError(inputId) {
+        document.getElementById("error_" + inputId).textContent = "";
+      }
+
+      const addressType = document.getElementById("edit_addressType").value.trim();
+      const name = document.getElementById("edit_name").value.trim();
+      const city = document.getElementById("edit_city").value.trim();
+      const state = document.getElementById("edit_state").value.trim();
+      const landMark = document.getElementById("edit_landMark").value.trim();
+      const pincode = document.getElementById("edit_pincode").value.trim();
+      const phone = document.getElementById("edit_phone").value.trim();
+      const altPhone = document.getElementById("edit_altPhone").value.trim();
+
+      if (addressType === "") {
+        showError("addressType", "Address Type is required");
+        isValid = false;
+      } else {
+        clearError("addressType");
+      }
+
+      if (name === "") {
+        showError("name", "Place Name is required");
+        isValid = false;
+      } else {
+        clearError("name");
+      }
+
+      if (city === "") {
+        showError("city", "City is required");
+        isValid = false;
+      } else {
+        clearError("city");
+      }
+
+      if (state === "") {
+        showError("state", "State is required");
+        isValid = false;
+      } else {
+        clearError("state");
+      }
+
+      if (landMark === "") {
+        showError("landMark", "Landmark is required");
+        isValid = false;
+      } else {
+        clearError("landMark");
+      }
+
+      if (pincode === "" || isNaN(pincode) || pincode.length !== 6) {
+        showError("pincode", "Enter a valid 6-digit Pincode");
+        isValid = false;
+      } else {
+        clearError("pincode");
+      }
+
+      if (phone === "" || isNaN(phone) || phone.length !== 10) {
+        showError("phone", "Enter a valid 10-digit Phone Number");
+        isValid = false;
+      } else {
+        clearError("phone");
+      }
+
+      if (altPhone !== "" && (isNaN(altPhone) || altPhone.length !== 10)) {
+        showError("altPhone", "Enter a valid 10-digit Alternative Phone Number");
+        isValid = false;
+      } else {
+        clearError("altPhone");
+      }
+
+      if (!isValid) {
+        return;
+      }
+
+      const addressId = document.getElementById("edit_address_id").value;
+      const formDataObject = {
+        addressType,
+        name,
+        city,
+        state,
+        landMark,
+        pincode,
+        phone,
+        altPhone
+      };
+
+      try {
+        const response = await fetch(`/editAddress?id=${addressId}`, {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formDataObject)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          const addressCard = document.getElementById(`address-${addressId}`);
+          if (addressCard) {
+            const cardBody = addressCard.querySelector('.card-body');
+            if (cardBody) {
+              cardBody.innerHTML = `
+                        <p><strong>Name:</strong> ${formDataObject.name}</p>
+                        <p><strong>City:</strong> ${formDataObject.city}</p>
+                        <p><strong>Landmark:</strong> ${formDataObject.landMark}</p>
+                        <p><strong>State:</strong> ${formDataObject.state}</p>
+                        <p><strong>Pincode:</strong> ${formDataObject.pincode}</p>
+                        <p><strong>Phone:</strong> ${formDataObject.phone}</p>
+                        ${formDataObject.altPhone ? `<p><strong>Alt. Phone:</strong> ${formDataObject.altPhone}</p>` : ''}
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-outline-dark" onclick="openEditAddressModal('${addressId}')">
+                                <i class="fas fa-edit me-2"></i>Edit
+                            </button>
+                            <button type="button" onclick="return confirmDelete('${addressId}')" class="btn btn-sm ml-2" style="background-color: #c10000; color: white;">Delete</button>
+                        </div>
+                    `;
+            }
+
+            const cardHeader = addressCard.querySelector('.card-header h5');
+            if (cardHeader) {
+              cardHeader.textContent = `${formDataObject.addressType} : Address`;
+            }
+          }
+          Swal.fire({
+            icon: "success",
+            title: "Updated Successfully",
+            text: result.message,
+            showConfirmButton: false,
+            timer: 2000
+          });
+          closeModal();
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Update Failed",
+            text: result.message,
+          });
+        }
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Something went wrong. Please try again later.",
+        });
+      }
+    }
+
+    function closeModal() {
+      const modal = document.getElementById("editAddressModal");
+      if (modal) {
+        modal.style.display = "none";
+        document.body.style.overflow = '';
+      }
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function (event) {
+      const modal = document.getElementById("editAddressModal");
+      if (event.target === modal) {
+        closeModal();
+      }
+    };
+
+
+    async function confirmDelete(addressId) {
+      try {
+        const result = await Swal.fire({
+          title: 'Are you sure?',
+          text: 'You will not be able to recover this address!',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, delete it!',
+          cancelButtonText: 'No, keep it'
+        });
+
+        if (result.isConfirmed) {
+          const response = await fetch('/deleteAddress', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ addressId })
+          })
+          const data = await response.json()
+          if (data.success) {
+            Swal.fire({
+              title: 'Success!',
+              text: 'Address deleted successfully!',
+              icon: 'success',
+              timer: 1500,
+              showConfirmButton: false
+            })
+            const addressCard = document.getElementById(`address-${addressId}`);
+            if (addressCard) {
+              addressCard.remove();
+            }
+          } else {
+            Swal.fire({
+              title: 'Error!',
+              text: 'Something went wrong. Please try again later',
+              icon: 'error',
+              timer: 1500,
+              showConfirmButton: false
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        Swal.fire({
+          title: 'Error!',
+          text: 'Something went wrong. Please try again later',
+          icon: 'error',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      }
+
+    }
+  </script>
+
+  <%- include("../../views/partials/user/footer") %>

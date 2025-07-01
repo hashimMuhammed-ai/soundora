@@ -1,0 +1,1205 @@
+<%- include("../../views/partials/user/header") %>
+
+  <title>User Profile</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+  <style>
+    /* Breadcrumb styles */
+    .breadcrumb-option {
+      background: #f3f2ee;
+      padding: 20px 0;
+      margin-bottom: 30px;
+    }
+
+    .breadcrumb__links {
+      display: flex;
+      align-items: center;
+    }
+
+    .breadcrumb__links a {
+      font-size: 15px;
+      color: #111111;
+      margin-right: 18px;
+      position: relative;
+      text-decoration: none;
+    }
+
+    .breadcrumb__links a:after {
+      content: "›";
+      position: absolute;
+      right: -12px;
+      top: 0;
+      color: #888;
+    }
+
+    .breadcrumb__links span {
+      font-size: 15px;
+      color: #888;
+    }
+
+    /* Main content styles */
+    .main {
+      padding: 30px 0;
+      background-color: #f8f9fa;
+    }
+
+    /* Sidebar styles */
+    .dashboard-menu {
+      background-color: #ffffff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .dashboard-menu .nav-link {
+      color: #333;
+      padding: 12px 15px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      font-weight: 500;
+    }
+
+    .dashboard-menu .nav-link i {
+      margin-right: 10px;
+      width: 20px;
+      text-align: center;
+    }
+
+    .dashboard-menu .nav-link:hover {
+      background-color: #f8f9fa;
+      color: #333;
+      transform: translateX(5px);
+    }
+
+    .dashboard-menu .nav-link.active {
+      background-color: #333;
+      color: #fff;
+    }
+
+    /* Profile content styles */
+    .dashboard-content {
+      background: #ffffff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .card {
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #eee;
+      padding: 15px 20px;
+      font-weight: 600;
+    }
+
+    .form-group label {
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .form-control {
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      padding: 10px 15px;
+    }
+
+    .btn-success {
+      background: linear-gradient(45deg, #ffa500, #ffd700);
+      border: none;
+      color: #000;
+      font-weight: 500;
+      padding: 8px 20px;
+      border-radius: 5px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-success:hover {
+      background: linear-gradient(45deg, #ff8c00, #ffc000);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(255, 165, 0, 0.2);
+      color: #000;
+    }
+
+    .btn-primary {
+      background: linear-gradient(45deg, #ffa500, #ffd700);
+      border: none;
+      color: #000;
+      font-weight: 500;
+      padding: 10px 25px;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(45deg, #ff8c00, #ffc000);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(255, 165, 0, 0.2);
+      color: #000;
+    }
+
+    .btn-sm {
+      padding: 5px 15px;
+      font-size: 0.875rem;
+    }
+
+    .cart-img-container {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      overflow-x: auto;
+      width: 100px;
+      /* Fixed width to show limited images */
+      padding: 5px 0;
+      margin: 0 auto;
+      -webkit-overflow-scrolling: touch;
+      /* Smooth scrolling on iOS */
+      scrollbar-width: none;
+      /* Hide scrollbar in Firefox */
+    }
+
+    .cart-img-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    .cart-img-container::-webkit-scrollbar-thumb {
+      background: #888;
+      /* Scrollbar color */
+      border-radius: 10px;
+    }
+
+    .cart-img {
+      min-width: 40px;
+      width: 75px;
+      height: 75px;
+      object-fit: cover;
+      border-radius: 4px;
+      flex-shrink: 0;
+      border: 1px solid #eee;
+    }
+
+    .cart-img-container img:not(:first-child) {
+      margin-left: -10px;
+    }
+
+    .cart-img.single {
+      margin-left: 0;
+      width: 75px;
+      height: 75px;
+    }
+
+    /* Wallet Tab Styles */
+    #wallet {
+      padding: 20px;
+      background-color: #ffffffa2;
+      border-radius: 10px;
+    }
+
+    #wallet .card-header {
+      background-color: #cccccc;
+      color: white;
+      border-radius: 10px 10px 0 0;
+    }
+
+    #wallet h2 {
+      margin-top: 20px;
+      font-size: 24px;
+      color: #333;
+    }
+
+    #wallet h3 {
+      margin-top: 30px;
+      font-size: 20px;
+      color: #fb7806;
+    }
+
+    #wallet table {
+      width: 100%;
+      margin-top: 10px;
+      border-collapse: collapse;
+    }
+
+    #wallet th,
+    #wallet td {
+      padding: 12px;
+      text-align: left;
+      border: 1px solid #ddd;
+    }
+
+    #wallet th {
+      background-color: #f2f2f2;
+    }
+
+    #wallet form {
+      margin-top: 20px;
+    }
+
+    #wallet input[type="number"] {
+      width: calc(100% - 20px);
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    #wallet button {
+      margin-top: 10px;
+      background: linear-gradient(45deg, #ffa500, #ffd700);
+      border: none;
+      color: #000;
+      font-weight: 500;
+      padding: 10px 20px;
+      border-radius: 5px;
+      transition: all 0.3s ease;
+    }
+
+    #wallet button:hover {
+      background: linear-gradient(45deg, #ff8c00, #ffc000);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(255, 165, 0, 0.2);
+      color: #000;
+    }
+
+    .order-id {
+      max-width: 150px;
+      overflow-x: auto;
+      white-space: nowrap;
+      display: block;
+      cursor: pointer;
+      padding: 2px;
+    }
+
+    /* Hide scrollbar */
+    .order-id::-webkit-scrollbar {
+      display: none;
+    }
+
+    .order-id {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .status {
+      font-weight: bold;
+      font-size: 14px;
+      text-transform: capitalize;
+    }
+
+    /* Specific status colors */
+    .status.delivered {
+      color: #28a745;
+    }
+
+    /* Green */
+    .status.cancelled {
+      color: #dc3545;
+    }
+
+    /* Red */
+    .status.shipped {
+      color: #007bff;
+    }
+
+    /* Blue */
+    .status.pending {
+      color: #fd7e14;
+    }
+
+    /* Orange */
+
+    /* Default for unknown statuses */
+    .status.default {
+      color: #000;
+      /* Black */
+    }
+
+    .custom-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .custom-modal {
+      background-color: white;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      animation: modalFadeIn 0.3s ease-out;
+    }
+
+    .custom-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .custom-modal-title {
+      font-size: 1.25rem;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .custom-close-button {
+      background: transparent;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .custom-modal-body {
+      padding: 20px;
+    }
+
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .invalid-feedback {
+      display: block;
+      color: #dc3545;
+      margin-top: 0.25rem;
+      font-size: 0.875em;
+    }
+
+    input.is-invalid {
+      border-color: #dc3545;
+    }
+
+    /* MOBILE-SPECIFIC STYLES */
+    @media (max-width: 768px) {
+
+      /* Mobile menu design */
+      .dashboard-menu {
+        padding: 10px;
+        margin-bottom: 20px;
+        overflow-x: auto;
+        white-space: nowrap;
+        display: flex;
+        border-radius: 10px;
+      }
+
+      .dashboard-menu .nav {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        width: 100%;
+      }
+
+      .dashboard-menu .nav-item {
+        margin-right: 8px;
+        flex: 0 0 auto;
+      }
+
+      .dashboard-menu .nav-link {
+        padding: 10px 15px;
+        margin-bottom: 0;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: fit-content;
+      }
+
+      .dashboard-menu .nav-link i {
+        margin-right: 6px;
+      }
+
+      .dashboard-menu .nav-link:hover {
+        transform: translateY(-3px);
+      }
+
+      /* Better mobile content spacing */
+      .dashboard-content {
+        padding: 15px;
+      }
+
+      /* Responsive tables */
+      .table-responsive {
+        overflow-x: auto;
+      }
+
+      .table th,
+      .table td {
+        white-space: nowrap;
+        padding: 8px;
+      }
+
+      /* More compact card views */
+      .card-body {
+        padding: 15px;
+      }
+
+      /* Adjustments for wallets and forms */
+      #wallet input[type="number"] {
+        width: 100%;
+      }
+
+      /* Ensure buttons are easy to tap */
+      .btn {
+        padding: 10px 15px;
+        margin: 5px 0;
+      }
+
+      /* Stack buttons in mobile */
+      .card-body .btn-sm {
+        display: block;
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      /* Profile buttons layout */
+      .card-body .btn-sm+.btn-sm {
+        margin-left: 0 !important;
+        margin-top: 8px;
+      }
+
+      /* Fix for tab content overflow */
+      .tab-content {
+        overflow-x: hidden;
+      }
+
+      /* Bottom menu visibility */
+      .dashboard-menu::-webkit-scrollbar {
+        display: none;
+      }
+
+      .dashboard-menu {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .cart-img-container {
+        width: 80px;
+        /* Slightly smaller on mobile */
+      }
+
+      .cart-img {
+        min-width: 35px;
+        width: 50px;
+        height: 50px;
+      }
+
+      .cart-img.single {
+        width: 50px;
+        height: 50px;
+      }
+
+      /* Better table layout for mobile */
+      .table th,
+      .table td {
+        padding: 8px 5px;
+      }
+
+      /* Ensure the Order ID column title is brief on mobile */
+      .table th:nth-child(2) {
+        max-width: 60px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
+
+    .profile-img-container {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 15px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid #ddd;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .profile-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    @media (max-width: 768px) {
+      .profile-img-container {
+        width: 80px;
+        height: 80px;
+      }
+    }
+
+    #cropper-container {
+      max-height: 400px;
+      overflow: auto;
+    }
+
+    #cropper-image {
+      max-width: 100%;
+    }
+  </style>
+
+  <!-- Breadcrumb Section Begin -->
+  <section class="breadcrumb-option">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="breadcrumb__text">
+            <h4><i class="fa fa-user"></i> Profile</h4>
+            <div class="breadcrumb__links">
+              <a href="/">Home</a>
+              <span>Profile</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Breadcrumb Section End -->
+
+  <main class="main">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-10 m-auto">
+          <!-- Top Navigation Menu for Mobile -->
+          <div class="dashboard-menu">
+            <ul class="nav" role="tablist">
+              <li class="nav-item">
+                <a class="nav-link active" id="dashboard-tab" data-toggle="tab" href="#dashboard" role="tab">
+                  <i class="fas fa-tachometer-alt"></i>Dashboard
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/address">
+                  <i class="fas fa-map-marker-alt"></i>Address
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="orders-tab" data-toggle="tab" href="#orders" role="tab">
+                  <i class="fas fa-shopping-bag"></i>Orders
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="wallet-tab" data-toggle="tab" href="#wallet" role="tab">
+                  <i class="fas fa-wallet"></i>Wallet
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="walletHistory-tab" data-toggle="tab" href="#walletHistory" role="tab">
+                  <i class="fas fa-history"></i>History
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/logout">
+                  <i class="fas fa-sign-out-alt"></i>Logout
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Main Content Area -->
+          <div class="tab-content dashboard-content">
+            <div class="tab-pane fade show active" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
+              <!-- PROFILE IMAGE DISPLAY -->
+              <div class="card card-green">
+                <div class="card-header">
+                  <h5 class="mb-0 text-center">User Profile</h5>
+                </div>
+                <div class="card-body text-center">
+
+                  <!-- Profile Image Display -->
+                  <div class="profile-img-container mb-3">
+                    <% if (user.profileImage) { %>
+                      <img src="/Uploads/profile-images/<%= user.profileImage %>" alt="Profile Image"
+                        class="profile-img">
+                      <% } else { %>
+                        <img src="uploads/product-images/1750963254397-cropped-img-1750963109846-2.jpeg"
+                          alt="Default Profile Image" class="profile-img">
+                        <% } %>
+                  </div>
+                  <h5 class="card-title" data-user-name>
+                    <%= user.name %>
+                  </h5>
+                  <p class="card-text" data-user-phone><strong>Phone:</strong>
+                    <%= user.phone %>
+                  </p>
+                  <p class="card-text"><strong>Email:</strong>
+                    <%= user.email %>
+                  </p>
+                  <button class="btn btn-sm btn-success">Edit Profile</button>
+                  <a href="/change-password" class="btn btn-sm btn-success">Change Password</a>
+                </div>
+              </div>
+            </div>
+
+
+            <div class="tab-pane fade" id="orders" role="tabpanel" aria-labelledby="orders-tab">
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="mb-0">Your Orders</h5>
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th>Image</th>
+                          <th>OrderId</th>
+                          <th>Status</th>
+                          <th>Total</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <% if (!orders || orders.length===0) { %>
+                          <tr>
+                            <td colspan="5">No orders found.</td>
+                          </tr>
+                          <% } else { %>
+                            <% orders.forEach(order=> { %>
+                              <tr>
+                                <td>
+                                  <div class="cart-img-container">
+                                    <% if (order.order_items.length===1) { %>
+                                      <img class="cart-img single"
+                                        src="/uploads/product-images/<%= order.order_items[0].productId.productImages[0] %>"
+                                        alt="">
+                                      <% } else { %>
+                                        <% order.order_items.forEach(item=> { %>
+                                          <img class="cart-img"
+                                            src="/uploads/product-images/<%= item.productId.productImages[0] %>" alt="">
+                                          <% }); %>
+                                            <% } %>
+                                  </div>
+                                </td>
+
+                                <td class="order-id">
+                                  #<%= order.orderId %>
+                                </td>
+                                <td>
+                                  <% const statusClasses={ delivered: "delivered" , cancelled: "cancelled" ,
+                                    shipped: "shipped" , pending: "pending" }; %>
+
+                                    <% if (statusClasses[order.status]) { %>
+                                      <span class="status <%= statusClasses[order.status] %>">
+                                        <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
+                                      </span>
+                                      <% } else { %>
+                                        <span class="status default">
+                                          <%= order.status %>
+                                        </span>
+                                        <% } %>
+                                </td>
+                                <td>
+                                  ₹<%= order.total %>
+                                </td>
+                                <td>
+                                  <a href="/viewOrder/<%= order._id %>" class="btn btn-sm btn-success">View</a>
+                                </td>
+                              </tr>
+                              <% }) %>
+                                <% } %>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Pagination Controls -->
+                  <% if (totalPages> 1) { %>
+                    <nav>
+                      <ul class="pagination justify-content-center mt-3">
+                        <% if (currentPage> 1) { %>
+                          <li class="page-item">
+                            <a class="page-link" href="?page=<%= currentPage - 1 %>#orders">Previous</a>
+                          </li>
+                          <% } %>
+
+                            <% let startPage=Math.max(1, currentPage - 1); let endPage=Math.min(totalPages, currentPage
+                              + 1); if (currentPage===1) { endPage=Math.min(totalPages, startPage + 2); } else if
+                              (currentPage===totalPages) { startPage=Math.max(1, endPage - 2); } if (startPage> 1) {
+                              %>
+                              <li class="page-item">
+                                <a class="page-link" href="?page=1#orders">1</a>
+                              </li>
+                              <% if (startPage> 2) { %>
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                                <% } %>
+                                  <% } %>
+
+                                    <% for (let i=startPage; i <=endPage; i++) { %>
+                                      <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                                        <a class="page-link" href="?page=<%= i %>#orders">
+                                          <%= i %>
+                                        </a>
+                                      </li>
+                                      <% } %>
+
+                                        <% if (endPage < totalPages) { %>
+                                          <% if (endPage < totalPages - 1) { %>
+                                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                                            <% } %>
+                                              <li class="page-item">
+                                                <a class="page-link" href="?page=<%= totalPages %>#orders">
+                                                  <%= totalPages %>
+                                                </a>
+                                              </li>
+                                              <% } %>
+
+                                                <% if (currentPage < totalPages) { %>
+                                                  <li class="page-item">
+                                                    <a class="page-link"
+                                                      href="?page=<%= currentPage + 1 %>#orders">Next</a>
+                                                  </li>
+                                                  <% } %>
+                      </ul>
+                    </nav>
+                    <% } %>
+                </div>
+              </div>
+            </div>
+
+
+            <div class="tab-pane fade" id="wallet" role="tabpanel" aria-labelledby="wallet-tab">
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="mb-0">Wallet</h5>
+                </div>
+                <div class="card-body contact-from-area">
+                  <div class="row">
+                    <div class="col-lg-8 mx-auto text-center mt-3">
+                      <h2>My Wallet</h2>
+                      <p><strong>Wallet Balance:</strong> ₹<%= wallet ? wallet.balance : 0 %>
+                      </p>
+
+                      <h3>Add Money to Wallet</h3>
+                      <form onsubmit="addMoney()">
+                        <div class="form-group">
+                          <input type="number" name="amount" class="form-control" placeholder="Enter amount" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">ADD MONEY</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Wallet History -->
+            <div class="tab-pane fade" id="walletHistory" role="tabpanel" aria-labelledby="walletHistory-tab">
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="mb-0">Wallet History</h5>
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Status</th>
+                          <th>Amount</th>
+                          <th>Description</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <% if (wallet && wallet.transactions.length> 0) { %>
+                          <% wallet.transactions.forEach(transaction=> { %>
+                            <tr>
+                              <td>
+                                <%= transaction.createdAt.getDate() %>/<%= transaction.createdAt.getMonth() + 1 %>/<%=
+                                      transaction.createdAt.getFullYear() %>
+                              </td>
+                              <% if(transaction.type==="credit" ){ %>
+                                <td style="color:green">Credit</td>
+                                <% } else { %>
+                                  <td style="color:red">Debit</td>
+                                  <% } %>
+                                    <td style="color:black; font-weight:bold;">
+                                      <%= transaction.amount %>
+                                    </td>
+                                    <td>
+                                      <%= transaction.description %>
+                                    </td>
+                            </tr>
+                            <% }) %>
+                              <% } else { %>
+                                <tr>
+                                  <td colspan="4">No transactions found.</td>
+                                </tr>
+                                <% } %>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="custom-modal-overlay" id="editProfileModal">
+    <div class="custom-modal">
+      <div class="custom-modal-header">
+        <h5 class="custom-modal-title">Edit Profile</h5>
+        <button type="button" class="custom-close-button" id="closeEditProfileModal">&times;</button>
+      </div>
+      <div class="custom-modal-body">
+
+        <form id="editProfileForm" enctype="multipart/form-data">
+          <div class="mb-3">
+            <label for="editProfileImage" class="form-label">Profile Image</label>
+            <input type="file" class="form-control" id="editProfileImage" name="profileImage"
+              accept="image/jpeg,image/png,image/webp">
+            <div class="invalid-feedback" id="profileImageError"></div>
+            <div id="cropper-container" style="display: none; margin-top: 10px;">
+              <img id="cropper-image" style="max-width: 100%; display: block;">
+              <button type="button" class="btn btn-success mt-2" id="cropImageBtn">Crop Image</button>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="editName" class="form-label">Name</label>
+            <input type="text" class="form-control" id="editName" name="name" value="<%= user.name %>" required>
+            <div class="invalid-feedback" id="nameError"></div>
+          </div>
+          <div class="mb-3">
+            <label for="editPhone" class="form-label">Phone</label>
+            <input type="text" class="form-control" id="editPhone" name="phone" value="<%= user.phone %>" required>
+            <div class="invalid-feedback" id="phoneError"></div>
+          </div>
+          <div class="text-center mt-3">
+            <button type="submit" class="btn btn-success">Save Changes</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+  </div>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Handle tab switching
+    const tabLinks = document.querySelectorAll('.nav-link[data-toggle="tab"]');
+
+    tabLinks.forEach(function (link) {
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(el => {
+          el.classList.remove('show');
+          el.classList.remove('active');
+        });
+        this.classList.add('active');
+        const targetId = this.getAttribute('href').substring(1);
+        const targetContent = document.getElementById(targetId);
+        targetContent.classList.add('show', 'active');
+        window.location.hash = targetId;
+      });
+    });
+
+    // Check for hash in URL to activate correct tab on page load
+    if (window.location.hash) {
+      const hash = window.location.hash.substring(1);
+      const tabToActivate = document.querySelector(`.nav-link[href="#${hash}"]`);
+      if (tabToActivate) {
+        tabToActivate.click();
+      }
+    }
+  });
+
+  function addMoney() {
+    event.preventDefault();
+    const amount = document.querySelector('input[name="amount"]').value;
+
+    fetch('/addMoney', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ amount: amount }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: data.message,
+            showConfirmButton: false,
+            timer: 1500
+          }).then(() => {
+            window.location.reload();
+          });
+        } else {
+          Swal.fire('Error!', data.message, 'error');
+        }
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        Swal.fire('Error!', 'Something went wrong. Please try again later.', 'error');
+      });
+  }
+
+  $(document).ready(function () {
+    $('a[data-toggle="tab"]').on('click', function (e) {
+      e.preventDefault();
+      $(this).tab('show');
+    });
+
+    $('#dashboard-tab').tab('show');
+
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+      $('.nav-link').removeClass('active');
+      $(this).addClass('active');
+    });
+  });
+
+  const editProfileModal = document.getElementById('editProfileModal');
+  const closeEditProfileModalBtn = document.getElementById('closeEditProfileModal');
+  const editProfileForm = document.getElementById('editProfileForm');
+  const editProfileBtn = document.querySelector('.btn-success:not(a)'); // Selects the Edit Profile button, excluding the Change Password link
+
+  let cropper;
+  let croppedImageData = null;
+
+  function openEditProfileModal() {
+    editProfileModal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeEditProfileModal() {
+    editProfileModal.style.display = 'none';
+    document.body.style.overflow = '';
+    document.getElementById('nameError').textContent = '';
+    document.getElementById('phoneError').textContent = '';
+    document.getElementById('profileImageError').textContent = '';
+    document.getElementById('editName').classList.remove('is-invalid');
+    document.getElementById('editPhone').classList.remove('is-invalid');
+    document.getElementById('editProfileImage').classList.remove('is-invalid');
+    document.getElementById('cropper-container').style.display = 'none';
+    if (cropper) {
+      cropper.destroy();
+      cropper = null;
+    }
+    const existingPreview = document.querySelector('.profile-img-preview');
+    if (existingPreview) existingPreview.remove();
+  }
+
+  if (editProfileBtn) {
+    editProfileBtn.addEventListener('click', openEditProfileModal);
+  }
+
+  if (closeEditProfileModalBtn) {
+    closeEditProfileModalBtn.addEventListener('click', closeEditProfileModal);
+  }
+
+  // Close modal when clicking outside
+  editProfileModal.addEventListener('click', function (event) {
+    if (event.target === editProfileModal) {
+      closeEditProfileModal();
+    }
+  });
+
+  // Close modal with ESC key
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && editProfileModal.style.display === 'flex') {
+      closeEditProfileModal();
+    }
+  });
+
+  // Initialize Cropper.js when an image is selected
+  document.getElementById('editProfileImage').addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const cropperImage = document.getElementById('cropper-image');
+        cropperImage.src = e.target.result;
+        document.getElementById('cropper-container').style.display = 'block';
+
+        if (cropper) {
+          cropper.destroy();
+        }
+
+        cropper = new Cropper(cropperImage, {
+          aspectRatio: 1,
+          viewMode: 1,
+          autoCropArea: 0.8,
+          responsive: true,
+          crop: function (event) {
+            // Optional: Handle crop event
+          }
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Handle crop button click
+  document.getElementById('cropImageBtn').addEventListener('click', function () {
+    if (cropper) {
+      const canvas = cropper.getCroppedCanvas({
+        width: 200,
+        height: 200,
+      });
+
+      canvas.toBlob(function (blob) {
+        croppedImageData = blob;
+
+        const previewImg = document.createElement('img');
+        previewImg.src = URL.createObjectURL(blob);
+        previewImg.className = 'profile-img-preview mt-2';
+        previewImg.style.maxWidth = '100px';
+        const existingPreview = document.querySelector('.profile-img-preview');
+        if (existingPreview) existingPreview.remove();
+        document.getElementById('cropper-container').after(previewImg);
+
+        document.getElementById('cropper-container').style.display = 'none';
+        cropper.destroy();
+        cropper = null;
+      }, 'image/jpeg', 0.8);
+    }
+  });
+
+  // Handle form submission
+  editProfileForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    document.getElementById('nameError').textContent = '';
+    document.getElementById('phoneError').textContent = '';
+    document.getElementById('profileImageError').textContent = '';
+    document.getElementById('editName').classList.remove('is-invalid');
+    document.getElementById('editPhone').classList.remove('is-invalid');
+    document.getElementById('editProfileImage').classList.remove('is-invalid');
+
+    const name = document.getElementById('editName').value.trim();
+    const phone = document.getElementById('editPhone').value.trim();
+    const profileImage = document.getElementById('editProfileImage').files[0];
+
+    let hasError = false;
+
+    if (name === '') {
+      document.getElementById('nameError').textContent = 'Name is required';
+      document.getElementById('editName').classList.add('is-invalid');
+      hasError = true;
+    }
+
+    if (phone === '') {
+      document.getElementById('phoneError').textContent = 'Phone number is required';
+      document.getElementById('editPhone').classList.add('is-invalid');
+      hasError = true;
+    } else if (!/^\d{10}$/.test(phone)) {
+      document.getElementById('phoneError').textContent = 'Please enter a valid 10-digit phone number';
+      document.getElementById('editPhone').classList.add('is-invalid');
+      hasError = true;
+    }
+
+    if (croppedImageData || profileImage) {
+      const fileToValidate = croppedImageData || profileImage;
+      const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (!validTypes.includes(fileToValidate.type)) {
+        document.getElementById('profileImageError').textContent = 'Please upload a JPEG, PNG, or WebP image';
+        document.getElementById('editProfileImage').classList.add('is-invalid');
+        hasError = true;
+      } else if (fileToValidate.size > maxSize) {
+        document.getElementById('profileImageError').textContent = 'Image size must be less than 5MB';
+        document.getElementById('editProfileImage').classList.add('is-invalid');
+        hasError = true;
+      }
+    }
+
+    if (hasError) return;
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('phone', phone);
+    if (croppedImageData) {
+      formData.append('profileImage', croppedImageData, 'cropped-image.jpg');
+    } else if (profileImage) {
+      formData.append('profileImage', profileImage);
+    }
+
+    try {
+      const response = await fetch('/update-profile', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        closeEditProfileModal();
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: 'Profile updated successfully',
+          showConfirmButton: false,
+          timer: 1500,
+        }).then(() => {
+          const nameElement = document.querySelector('[data-user-name]');
+          const phoneElement = document.querySelector('[data-user-phone]');
+          const profileImgElement = document.querySelector('.profile-img');
+          nameElement.textContent = data.user.name;
+          phoneElement.innerHTML = `<strong>Phone:</strong> ${data.user.phone}`;
+          if (data.user.profileImage) {
+            profileImgElement.src = `/Uploads/profile-images/${data.user.profileImage}?t=${new Date().getTime()}`;
+          }
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: data.message || 'Failed to update profile',
+        });
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Something went wrong. Please try again.',
+      });
+    }
+  });
+</script>
+
+  <%- include("../../views/partials/user/footer") %>
