@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const env = require('dotenv').config()
 const session = require('express-session');
 const Address = require('../../models/addressModel');
+const Order = require('../../models/orderModel');
 const multer = require('multer');
 const storage = require('../../helpers/multer');
 
@@ -67,7 +68,7 @@ const forgotEmailValid = async (req, res) => {
             if (emailSent) {
                 req.session.userOtp = otp
                 req.session.userData = { email }
-                
+
                 res.render("user/forgotPass-otp")
                 console.log('otp sent', otp);
             } else {
@@ -84,7 +85,7 @@ const forgotEmailValid = async (req, res) => {
 
 const verifyForgotPassOtp = async (req, res) => {
     try {
-        const enteredOtp = req.body.otp 
+        const enteredOtp = req.body.otp
         if (enteredOtp === req.session.userOtp) {
             if (!req.session.userData) {
                 return res.json({
@@ -92,7 +93,7 @@ const verifyForgotPassOtp = async (req, res) => {
                     message: "Session expired. Please try again."
                 })
             }
-            
+
             res.json({
                 success: true,
                 message: "OTP verified successfully",
@@ -125,8 +126,8 @@ const resendtOTP = async (req, res) => {
         req.session.userOtp = otp
         const email = req.session.userData?.email
 
-        if(!email){
-            return res.status(400).json({success:false,message:"Email not found in session"})
+        if (!email) {
+            return res.status(400).json({ success: false, message: "Email not found in session" })
         }
 
         const emailSent = await sendVerificationEmail(email, otp);
@@ -143,8 +144,8 @@ const resendtOTP = async (req, res) => {
 const postNewPassword = async (req, res) => {
     try {
         const { newPass1, newPass2 } = req.body
-        const email = req.session.userData?.email 
-        
+        const email = req.session.userData?.email
+
         if (!email) {
             return res.render("user/reset-password", { message: "Session expired. Please try again." })
         }
@@ -152,18 +153,18 @@ const postNewPassword = async (req, res) => {
         if (newPass1 === newPass2) {
             const hashedPassword = await bcrypt.hash(newPass1, 10);
             const user = await User.findOneAndUpdate(
-                { email: email }, 
+                { email: email },
                 { password: hashedPassword },
-                { new: true } 
+                { new: true }
             )
-            
+
             if (!user) {
                 return res.render("user/reset-password", { message: "User not found" })
             }
 
             req.session.userData = null
             req.session.userOtp = null
-            return res.render("user/login", {success: true, message: "Password updated successfully. Please login." })
+            return res.render("user/login", { success: true, message: "Password updated successfully. Please login." })
         } else {
             return res.render("user/reset-password", { message: "Passwords do not match" })
         }
@@ -178,7 +179,21 @@ const getUserProfile = async (req, res) => {
     try {
         const userId = req.session.user;
         const user = await User.findById(userId);
-        res.render('user/profile', {user, orders: [], totalPages: 1, wallet: {transactions: []}})
+        
+        const page = parseInt(req.query.page) || 1;
+        const limit = 4;
+        const skip = (page - 1) * limit;
+
+        const totalOrders = await Order.countDocuments({ userId });
+        const orders = await Order.find({ userId })
+            .populate("items.productId")
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const totalPages = Math.ceil(totalOrders / limit);
+
+        res.render('user/profile', { user, orders, totalPages, currentPage: page, wallet: { transactions: [] } })
     } catch (error) {
         console.log(error)
     }
@@ -188,11 +203,14 @@ const getUserProfile = async (req, res) => {
 const getUserAddress = async (req, res) => {
     try {
         const userId = req.session.user;
-        const userAddress = await Address.findOne({userId});
-        if(userAddress){
-            res.render('user/address', {userAddress})
+        let userAddress = await Address.findOne({ userId });
+
+        if (!userAddress) {
+        userAddress = { address: [] }; // default if no addresses
         }
-        
+
+        res.render('user/address', { userAddress })
+
     } catch (error) {
         console.log(error);
     }
@@ -208,10 +226,10 @@ const getAddAddress = async (req, res) => {
 
 const postAddAddress = async (req, res) => {
     try {
-        const {addressType, name, city, landMark, state, pincode, phone, altPhone} = req.body;
+        const { addressType, name, city, landMark, state, pincode, phone, altPhone } = req.body;
         const userId = req.session.user;
-        const userAddress = await Address.findOne({userId});
-        if(userAddress){
+        const userAddress = await Address.findOne({ userId });
+        if (userAddress) {
             userAddress.address.push({
                 addressType,
                 name,
@@ -224,27 +242,29 @@ const postAddAddress = async (req, res) => {
             });
             await userAddress.save();
         } else {
-            await Address.create({userId,address: [{
-                addressType,
-                name,
-                city,
-                landMark,
-                state,
-                pincode,
-                phone,
-                altPhone
-            }]})
+            await Address.create({
+                userId, address: [{
+                    addressType,
+                    name,
+                    city,
+                    landMark,
+                    state,
+                    pincode,
+                    phone,
+                    altPhone
+                }]
+            })
         }
-        res.json({success: true, message: 'Address Added Successfully'})
+        res.json({ success: true, message: 'Address Added Successfully' })
 
     } catch (error) {
-        console.error('Error in Adding Address',error);
-        res.status(500).json({success: false, message: 'Something Went Wrong!'});
+        console.error('Error in Adding Address', error);
+        res.status(500).json({ success: false, message: 'Something Went Wrong!' });
     }
 }
 
 
-const postEditAddress = async (req,res) => {
+const postEditAddress = async (req, res) => {
     try {
         const addressId = req.query.id;
         const {
@@ -258,13 +278,13 @@ const postEditAddress = async (req,res) => {
             altPhone
         } = req.body;
         const userId = req.session.user;
-        const userAddress = await Address.findOne({userId});
-        if(!userAddress){
-            return res.status(404).json({success: false, message: 'Address record not found'})
+        const userAddress = await Address.findOne({ userId });
+        if (!userAddress) {
+            return res.status(404).json({ success: false, message: 'Address record not found' })
         }
         const addressItem = userAddress.address.id(addressId);
-        if(!addressItem){
-            return res.status(404).json({success: false, message: 'Address Not Found'})
+        if (!addressItem) {
+            return res.status(404).json({ success: false, message: 'Address Not Found' })
         }
         addressItem.addressType = addressType;
         addressItem.name = name;
@@ -275,10 +295,10 @@ const postEditAddress = async (req,res) => {
         addressItem.phone = phone;
         addressItem.altPhone = altPhone;
         await userAddress.save();
-        res.json({success: true, message: 'Address Updated Successfully'});
+        res.json({ success: true, message: 'Address Updated Successfully' });
     } catch (error) {
         console.error('Error Updating Error', error);
-        res.status(500).json({success: false, message: 'Server Error'})
+        res.status(500).json({ success: false, message: 'Server Error' })
     }
 }
 
@@ -287,80 +307,75 @@ const deleteAddress = async (req, res) => {
     try {
         const { addressId } = req.body;
         const userId = req.session.user;
-        const userAddress = await Address.findOne({userId});
-        if(!userAddress){
-            return res.status(404).json({success: false, message: 'Address record not found'})
+        const userAddress = await Address.findOne({ userId });
+        if (!userAddress) {
+            return res.status(404).json({ success: false, message: 'Address record not found' })
         }
         const addressItem = userAddress.address.id(addressId);
-        if(!addressItem){
-            return res.status(404).json({success: false, message: 'Address not found'});
+        if (!addressItem) {
+            return res.status(404).json({ success: false, message: 'Address not found' });
         }
-        userAddress.address.pull({_id: addressId});
+        userAddress.address.pull({ _id: addressId });
         await userAddress.save();
-        res.json({success: true, message: 'Address Deleted Successfully'})
+        res.json({ success: true, message: 'Address Deleted Successfully' })
     } catch (error) {
         console.error('Error Deleting Address', error);
-        res.status(500).json({success: false, message: 'Server Error'})
+        res.status(500).json({ success: false, message: 'Server Error' })
     }
 }
 
 
 const upload = multer({
-  storage,
-  fileFilter: (req, file, cb) => {
-    const filetypes = /jpeg|jpg|png|webp/;
-    const mimetype = filetypes.test(file.mimetype);
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    if (mimetype && extname) {
-      return cb(null, true);
-    }
-    cb(new Error('Only JPEG, PNG, and WebP files are allowed'));
-  },
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    storage,
+    fileFilter: (req, file, cb) => {
+        const filetypes = /jpeg|jpg|png|webp/;
+        const mimetype = filetypes.test(file.mimetype);
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+        if (mimetype && extname) {
+            return cb(null, true);
+        }
+        cb(new Error('Only JPEG, PNG, and WebP files are allowed'));
+    },
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
 }).single('profileImage');
 
 // Update Profile Route
 const updateProfile = async (req, res) => {
-  try {
-    console.log('lllllllllllllllllllllllllllllllllllllllll')
-    console.log('helloooooooooooooooooooooooo');
+    try {
+        const { name, phone } = req.body;
+        const userId = req.session.user; 
 
+        // Validate inputs
+        if (!name || !phone) {
+            return res.json({ success: false, message: 'Name and phone are required' });
+        }
+        if (!/^\d{10}$/.test(phone)) {
+            return res.json({ success: false, message: 'Invalid phone number' });
+        }
 
-      const { name, phone } = req.body;
-      const userId = req.session.user; // Assuming user ID is stored in session
+        // Prepare update data
+        const updateData = { name, phone };
+        if (req.file) {
+            updateData.profileImage = req.file.filename;
+        }
 
-      // Validate inputs
-      if (!name || !phone) {
-        return res.json({ success: false, message: 'Name and phone are required' });
-      }
-      if (!/^\d{10}$/.test(phone)) {
-        return res.json({ success: false, message: 'Invalid phone number' });
-      }
+        // Update user in database
+        const user = await User.findByIdAndUpdate(
+            userId,
+            updateData,
+            { new: true, runValidators: true }
+        );
 
-      // Prepare update data
-      const updateData = { name, phone };
-      if (req.file) {
-        updateData.profileImage = req.file.filename;
-      }
+        if (!user) {
+            return res.json({ success: false, message: 'User not found' });
+        }
 
-      // Update user in database
-      console.log('hhhhhhhoiiiiiii',updateData);
-      const user = await User.findByIdAndUpdate(
-        userId,
-        updateData,
-        { new: true, runValidators: true }
-      );
-
-      if (!user) {
-        return res.json({ success: false, message: 'User not found' });
-      }
-
-      res.json({ success: true, message: 'Profile updated successfully', user });
-    ;
-  } catch (error) {
-    console.error('Update Profile Error:', error);
-    res.json({ success: false, message: 'Server error' });
-  }
+        res.json({ success: true, message: 'Profile updated successfully', user });
+        ;
+    } catch (error) {
+        console.error('Update Profile Error:', error);
+        res.json({ success: false, message: 'Server error' });
+    }
 };
 
 const getChangePassword = async (req, res) => {
@@ -371,6 +386,46 @@ const getChangePassword = async (req, res) => {
     }
 }
 
+
+const verifyCurrentPassword = async (req, res) => {
+    try {
+        const { currentPassword } = req.body;
+        const userId = req.session.user;
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ success: false, message: 'Current Password is incorrect' })
+        }
+        res.json({ success: true });
+
+    } catch (error) {
+        console.error('Error verifying password', error);
+        res.status(500).json({ success: false, message: 'internal server error' });
+    }
+}
+
+
+const updatePassword = async (req, res) => {
+    try {
+        const { newPassword } = req.body;
+        const userId = req.session.user;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Unauthorized: No user session found' });
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        const updatedPassword = await User.findByIdAndUpdate(userId, { $set: { password: hashedPassword } }, { new: true });
+        if (!updatedPassword) {
+            return res.status(500).json({ success: false, message: 'Failed to update password' });
+        }
+        res.json({ success: true })
+    } catch (error) {
+        console.error('Password Updating Error', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+}
 
 module.exports = {
     getForgotPassPage,
@@ -386,5 +441,7 @@ module.exports = {
     postEditAddress,
     deleteAddress,
     updateProfile,
-    getChangePassword
+    getChangePassword,
+    verifyCurrentPassword,
+    updatePassword
 }

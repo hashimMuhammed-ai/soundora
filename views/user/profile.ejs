@@ -155,50 +155,44 @@
       font-size: 0.875rem;
     }
 
-    .cart-img-container {
-      display: flex;
-      flex-wrap: nowrap;
-      align-items: center;
-      overflow-x: auto;
-      width: 100px;
-      /* Fixed width to show limited images */
-      padding: 5px 0;
-      margin: 0 auto;
-      -webkit-overflow-scrolling: touch;
-      /* Smooth scrolling on iOS */
-      scrollbar-width: none;
-      /* Hide scrollbar in Firefox */
-    }
+.cart-img-container {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  overflow-x: auto;
+  width: auto; /* Let it grow naturally */
+  max-width: 180px; /* Optional: limit max space if needed */
+  padding: 5px 0;
+  margin: 0 auto;
+  gap: 6px; /* Add spacing between images */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
 
-    .cart-img-container::-webkit-scrollbar {
-      display: none;
-    }
+.cart-img-container::-webkit-scrollbar {
+  display: none;
+}
 
-    .cart-img-container::-webkit-scrollbar-thumb {
-      background: #888;
-      /* Scrollbar color */
-      border-radius: 10px;
-    }
+.cart-img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+  border: 1px solid #eee;
+}
 
-    .cart-img {
-      min-width: 40px;
-      width: 75px;
-      height: 75px;
-      object-fit: cover;
-      border-radius: 4px;
-      flex-shrink: 0;
-      border: 1px solid #eee;
-    }
+/* Remove overlap margin */
+.cart-img-container img:not(:first-child) {
+  margin-left: 0;
+}
 
-    .cart-img-container img:not(:first-child) {
-      margin-left: -10px;
-    }
+.cart-img.single {
+  margin-left: 0;
+  width: 75px;
+  height: 75px;
+}
 
-    .cart-img.single {
-      margin-left: 0;
-      width: 75px;
-      height: 75px;
-    }
 
     /* Wallet Tab Styles */
     #wallet {
@@ -272,10 +266,10 @@
     }
 
     .order-id {
-      max-width: 150px;
+      max-width: 220px;
       overflow-x: auto;
       white-space: nowrap;
-      display: block;
+      display: inline-block;
       cursor: pointer;
       padding: 2px;
     }
@@ -690,12 +684,12 @@
                               <tr>
                                 <td>
                                   <div class="cart-img-container">
-                                    <% if (order.order_items.length===1) { %>
+                                    <% if (order.items.length===1) { %>
                                       <img class="cart-img single"
-                                        src="/uploads/product-images/<%= order.order_items[0].productId.productImages[0] %>"
+                                        src="/uploads/product-images/<%= order.items[0].productId.productImages[0] %>"
                                         alt="">
                                       <% } else { %>
-                                        <% order.order_items.forEach(item=> { %>
+                                        <% order.items.forEach(item=> { %>
                                           <img class="cart-img"
                                             src="/uploads/product-images/<%= item.productId.productImages[0] %>" alt="">
                                           <% }); %>
@@ -703,7 +697,7 @@
                                   </div>
                                 </td>
 
-                                <td class="order-id">
+                                <td class="order-id" style="max-width: 260px">
                                   #<%= order.orderId %>
                                 </td>
                                 <td>
@@ -721,7 +715,7 @@
                                         <% } %>
                                 </td>
                                 <td>
-                                  ₹<%= order.total %>
+                                  ₹<%= order.totalAmount %>
                                 </td>
                                 <td>
                                   <a href="/viewOrder/<%= order._id %>" class="btn btn-sm btn-success">View</a>
@@ -743,43 +737,48 @@
                           </li>
                           <% } %>
 
-                            <% let startPage=Math.max(1, currentPage - 1); let endPage=Math.min(totalPages, currentPage
-                              + 1); if (currentPage===1) { endPage=Math.min(totalPages, startPage + 2); } else if
-                              (currentPage===totalPages) { startPage=Math.max(1, endPage - 2); } if (startPage> 1) {
-                              %>
-                              <li class="page-item">
-                                <a class="page-link" href="?page=1#orders">1</a>
-                              </li>
-                              <% if (startPage> 2) { %>
-                                <li class="page-item disabled"><span class="page-link">...</span></li>
-                                <% } %>
-                                  <% } %>
+                        <% let startPage=Math.max(1, currentPage - 1); 
+                        let endPage=Math.min(totalPages, currentPage + 1); 
+                        if (currentPage===1) { 
+                          endPage=Math.min(totalPages, startPage + 2); 
+                        } else if (currentPage===totalPages) { 
+                          startPage=Math.max(1, endPage - 2);
+                        } 
+                        %>
+                        <% if (startPage> 1) { %>
+                          <li class="page-item">
+                            <a class="page-link" href="?page=1#orders">1</a>
+                          </li>
+                        <% if (startPage> 2) { %>
+                          <li class="page-item disabled"><span class="page-link">...</span></li>
+                          <% } %>
+                            <% } %>
 
-                                    <% for (let i=startPage; i <=endPage; i++) { %>
-                                      <li class="page-item <%= i === currentPage ? 'active' : '' %>">
-                                        <a class="page-link" href="?page=<%= i %>#orders">
-                                          <%= i %>
-                                        </a>
-                                      </li>
-                                      <% } %>
+                        <% for (let i=startPage; i <=endPage; i++) { %>
+                          <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                            <a class="page-link" href="?page=<%= i %>#orders">
+                              <%= i %>
+                            </a>
+                          </li>
+                          <% } %>
 
-                                        <% if (endPage < totalPages) { %>
-                                          <% if (endPage < totalPages - 1) { %>
-                                            <li class="page-item disabled"><span class="page-link">...</span></li>
-                                            <% } %>
-                                              <li class="page-item">
-                                                <a class="page-link" href="?page=<%= totalPages %>#orders">
-                                                  <%= totalPages %>
-                                                </a>
-                                              </li>
-                                              <% } %>
+                        <% if (endPage < totalPages) { %>
+                        <% if (endPage < totalPages - 1) { %>
+                          <li class="page-item disabled"><span class="page-link">...</span></li>
+                          <% } %>
+                            <li class="page-item">
+                              <a class="page-link" href="?page=<%= totalPages %>#orders">
+                                <%= totalPages %>
+                              </a>
+                            </li>
+                            <% } %>
 
-                                                <% if (currentPage < totalPages) { %>
-                                                  <li class="page-item">
-                                                    <a class="page-link"
-                                                      href="?page=<%= currentPage + 1 %>#orders">Next</a>
-                                                  </li>
-                                                  <% } %>
+                        <% if (currentPage < totalPages) { %>
+                          <li class="page-item">
+                            <a class="page-link"
+                              href="?page=<%= currentPage + 1 %>#orders">Next</a>
+                          </li>
+                          <% } %>
                       </ul>
                     </nav>
                     <% } %>
@@ -915,87 +914,64 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    // Handle tab switching
-    const tabLinks = document.querySelectorAll('.nav-link[data-toggle="tab"]');
-
-    tabLinks.forEach(function (link) {
-      link.addEventListener('click', function (e) {
-        e.preventDefault();
-        document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-pane').forEach(el => {
-          el.classList.remove('show');
-          el.classList.remove('active');
-        });
-        this.classList.add('active');
-        const targetId = this.getAttribute('href').substring(1);
-        const targetContent = document.getElementById(targetId);
-        targetContent.classList.add('show', 'active');
-        window.location.hash = targetId;
-      });
+  // ✅ Tab navigation logic with Bootstrap 4 (fixed)
+  $(document).ready(function () {
+    // On tab click, show tab and update hash without scroll
+    $('a[data-toggle="tab"]').on('click', function (e) {
+      e.preventDefault();
+      $(this).tab('show');
+      const targetId = $(this).attr('href');
+      history.replaceState(null, null, targetId);
     });
 
-    // Check for hash in URL to activate correct tab on page load
-    if (window.location.hash) {
-      const hash = window.location.hash.substring(1);
-      const tabToActivate = document.querySelector(`.nav-link[href="#${hash}"]`);
-      if (tabToActivate) {
-        tabToActivate.click();
+    // On page load, activate correct tab from hash
+    const hash = window.location.hash;
+    if (hash) {
+      const tabToActivate = $(`a[data-toggle="tab"][href="${hash}"]`);
+      if (tabToActivate.length) {
+        tabToActivate.tab('show');
       }
+    } else {
+      // Default to dashboard tab if no hash
+      $('#dashboard-tab').tab('show');
     }
   });
 
-  function addMoney() {
+  // 💸 Handle addMoney form submission
+  function addMoney(event) {
     event.preventDefault();
     const amount = document.querySelector('input[name="amount"]').value;
 
     fetch('/addMoney', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ amount: amount }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount })
     })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          Swal.fire({
-            icon: 'success',
-            title: 'Success',
-            text: data.message,
-            showConfirmButton: false,
-            timer: 1500
-          }).then(() => {
-            window.location.reload();
-          });
-        } else {
-          Swal.fire('Error!', data.message, 'error');
-        }
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-        Swal.fire('Error!', 'Something went wrong. Please try again later.', 'error');
-      });
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: data.message,
+          showConfirmButton: false,
+          timer: 1500
+        }).then(() => window.location.reload());
+      } else {
+        Swal.fire('Error!', data.message, 'error');
+      }
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      Swal.fire('Error!', 'Something went wrong. Please try again.', 'error');
+    });
   }
 
-  $(document).ready(function () {
-    $('a[data-toggle="tab"]').on('click', function (e) {
-      e.preventDefault();
-      $(this).tab('show');
-    });
-
-    $('#dashboard-tab').tab('show');
-
-    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-      $('.nav-link').removeClass('active');
-      $(this).addClass('active');
-    });
-  });
-
+  // 🧑‍💼 Profile modal and cropper logic
   const editProfileModal = document.getElementById('editProfileModal');
   const closeEditProfileModalBtn = document.getElementById('closeEditProfileModal');
   const editProfileForm = document.getElementById('editProfileForm');
-  const editProfileBtn = document.querySelector('.btn-success:not(a)'); // Selects the Edit Profile button, excluding the Change Password link
+  const editProfileBtn = document.querySelector('.btn-success:not(a)');
 
   let cropper;
   let croppedImageData = null;
@@ -1015,37 +991,25 @@
     document.getElementById('editPhone').classList.remove('is-invalid');
     document.getElementById('editProfileImage').classList.remove('is-invalid');
     document.getElementById('cropper-container').style.display = 'none';
-    if (cropper) {
-      cropper.destroy();
-      cropper = null;
-    }
+    if (cropper) cropper.destroy();
+    cropper = null;
     const existingPreview = document.querySelector('.profile-img-preview');
     if (existingPreview) existingPreview.remove();
   }
 
-  if (editProfileBtn) {
-    editProfileBtn.addEventListener('click', openEditProfileModal);
-  }
-
-  if (closeEditProfileModalBtn) {
-    closeEditProfileModalBtn.addEventListener('click', closeEditProfileModal);
-  }
-
-  // Close modal when clicking outside
-  editProfileModal.addEventListener('click', function (event) {
-    if (event.target === editProfileModal) {
-      closeEditProfileModal();
-    }
+  if (editProfileBtn) editProfileBtn.addEventListener('click', openEditProfileModal);
+  if (closeEditProfileModalBtn) closeEditProfileModalBtn.addEventListener('click', closeEditProfileModal);
+  editProfileModal.addEventListener('click', (event) => {
+    if (event.target === editProfileModal) closeEditProfileModal();
   });
 
-  // Close modal with ESC key
   document.addEventListener('keydown', function (event) {
     if (event.key === 'Escape' && editProfileModal.style.display === 'flex') {
       closeEditProfileModal();
     }
   });
 
-  // Initialize Cropper.js when an image is selected
+  // 🖼️ Initialize Cropper.js
   document.getElementById('editProfileImage').addEventListener('change', function (e) {
     const file = e.target.files[0];
     if (file) {
@@ -1054,36 +1018,24 @@
         const cropperImage = document.getElementById('cropper-image');
         cropperImage.src = e.target.result;
         document.getElementById('cropper-container').style.display = 'block';
-
-        if (cropper) {
-          cropper.destroy();
-        }
-
+        if (cropper) cropper.destroy();
         cropper = new Cropper(cropperImage, {
           aspectRatio: 1,
           viewMode: 1,
           autoCropArea: 0.8,
-          responsive: true,
-          crop: function (event) {
-            // Optional: Handle crop event
-          }
+          responsive: true
         });
       };
       reader.readAsDataURL(file);
     }
   });
 
-  // Handle crop button click
+  // 🧩 Handle crop button
   document.getElementById('cropImageBtn').addEventListener('click', function () {
     if (cropper) {
-      const canvas = cropper.getCroppedCanvas({
-        width: 200,
-        height: 200,
-      });
-
+      const canvas = cropper.getCroppedCanvas({ width: 200, height: 200 });
       canvas.toBlob(function (blob) {
         croppedImageData = blob;
-
         const previewImg = document.createElement('img');
         previewImg.src = URL.createObjectURL(blob);
         previewImg.className = 'profile-img-preview mt-2';
@@ -1091,7 +1043,6 @@
         const existingPreview = document.querySelector('.profile-img-preview');
         if (existingPreview) existingPreview.remove();
         document.getElementById('cropper-container').after(previewImg);
-
         document.getElementById('cropper-container').style.display = 'none';
         cropper.destroy();
         cropper = null;
@@ -1099,10 +1050,9 @@
     }
   });
 
-  // Handle form submission
+  // 📤 Submit profile form
   editProfileForm.addEventListener('submit', async function (e) {
     e.preventDefault();
-
     document.getElementById('nameError').textContent = '';
     document.getElementById('phoneError').textContent = '';
     document.getElementById('profileImageError').textContent = '';
@@ -1113,35 +1063,30 @@
     const name = document.getElementById('editName').value.trim();
     const phone = document.getElementById('editPhone').value.trim();
     const profileImage = document.getElementById('editProfileImage').files[0];
-
     let hasError = false;
 
-    if (name === '') {
+    if (!name) {
       document.getElementById('nameError').textContent = 'Name is required';
       document.getElementById('editName').classList.add('is-invalid');
       hasError = true;
     }
 
-    if (phone === '') {
-      document.getElementById('phoneError').textContent = 'Phone number is required';
-      document.getElementById('editPhone').classList.add('is-invalid');
-      hasError = true;
-    } else if (!/^\d{10}$/.test(phone)) {
-      document.getElementById('phoneError').textContent = 'Please enter a valid 10-digit phone number';
+    if (!/^\d{10}$/.test(phone)) {
+      document.getElementById('phoneError').textContent = 'Enter a valid 10-digit number';
       document.getElementById('editPhone').classList.add('is-invalid');
       hasError = true;
     }
 
     if (croppedImageData || profileImage) {
-      const fileToValidate = croppedImageData || profileImage;
+      const file = croppedImageData || profileImage;
       const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-      const maxSize = 5 * 1024 * 1024; // 5MB
-      if (!validTypes.includes(fileToValidate.type)) {
-        document.getElementById('profileImageError').textContent = 'Please upload a JPEG, PNG, or WebP image';
+      const maxSize = 5 * 1024 * 1024;
+      if (!validTypes.includes(file.type)) {
+        document.getElementById('profileImageError').textContent = 'Only JPEG, PNG, or WebP allowed';
         document.getElementById('editProfileImage').classList.add('is-invalid');
         hasError = true;
-      } else if (fileToValidate.size > maxSize) {
-        document.getElementById('profileImageError').textContent = 'Image size must be less than 5MB';
+      } else if (file.size > maxSize) {
+        document.getElementById('profileImageError').textContent = 'Image must be < 5MB';
         document.getElementById('editProfileImage').classList.add('is-invalid');
         hasError = true;
       }
@@ -1163,7 +1108,6 @@
         method: 'POST',
         body: formData,
       });
-
       const data = await response.json();
 
       if (data.success) {
@@ -1201,5 +1145,6 @@
     }
   });
 </script>
+
 
   <%- include("../../views/partials/user/footer") %>

@@ -102,6 +102,12 @@
         .offcanvas-menu-overlay.active {
             visibility: visible;
         }
+
+        .header__nav__option i {
+            font-size: 18px;
+            margin-left: 10px;
+            color: #111;
+        }
         
         .offcanvas-menu-wrapper {
             position: fixed;
@@ -342,9 +348,10 @@
                             <a href="/signup" class="sign-in-link">Sign Up</a>
                             <a href="/login" class="sign-in-link">Login</a>
                         <% } %>
-                        <a href="/wishlist"><img src="/img/icon/heart.png" alt=""></a>
-                        <a href="/cart"><img src="/img/icon/cart.png" alt=""> <span></span></a>
-                        <div class="price">₹0.00</div>
+                       <a href="/wishlist"><i class="fa fa-heart" style="font-size: 18px;"></i></a>
+                       <a href="/cart"><i class="fa fa-shopping-bag" style="font-size: 18px;"></i></a>
+
+                        <div class="price" style="margin-bottom: 5px;">₹0.00</div>
                     </div>
                 </div>
             </div>
