@@ -3,6 +3,9 @@ const User = require('../../models/userModel');
 const Address = require('../../models/addressModel');
 const Product = require('../../models/productModel');
 const Order = require('../../models/orderModel');
+const PDFDocument = require('pdfkit');
+const fs = require('fs');
+const path = require('path');
 
 const loadCheckout = async (req, res) => {
     try {
@@ -350,7 +353,168 @@ const cancelOrder = async (req, res) => {
 };
 
 
+const generateInvoice = async (req, res) => {
+    try {
+        const orderId = req.params.id;
 
+        if (!orderId) {
+            return res.status(400).send('Invalid Order ID');
+        }
+
+        const order = await Order.findById(orderId)
+            .populate({
+                path: 'items.productId',
+                select: 'productName salePrice'
+            })
+            .populate('userId', 'name email phone')
+
+        if (!order) {
+            return res.status(404).send('Order not found');
+        }
+
+
+        const customerName = order.userId ?
+            (order.userId.name || 'Customer') :
+            'Customer';
+
+
+        if (!order) {
+            return res.status(404).send('Order not found');
+        }
+
+        const invoiceDir = path.join(__dirname, '../../publics/invoices');
+        if (!fs.existsSync(invoiceDir)) {
+            fs.mkdirSync(invoiceDir, { recursive: true });
+        }
+
+        const invoicePath = path.join(invoiceDir, `invoice-${order.orderId}.pdf`);
+        const writeStream = fs.createWriteStream(invoicePath);
+
+        const doc = new PDFDocument({
+            size: 'A4',
+            margins: {
+                top: 50,
+                bottom: 50,
+                left: 50,
+                right: 50
+            }
+        });
+        doc.pipe(writeStream);
+
+        doc.font('Helvetica-Bold')
+            .fontSize(25)
+            .text('Soundora', { align: 'center' })
+            .fontSize(16)
+            .text('Tax Invoice', { align: 'center' })
+            .moveDown(1.5);
+
+        doc.font('Helvetica')
+            .fontSize(10)
+            .text(`Invoice Number: ${order.orderId}`, { align: 'left' })
+            .text(`Date of Issue: ${order.createdAt.toLocaleDateString()}`, { align: 'left' })
+            .moveDown(1);
+
+        doc.font('Helvetica-Bold')
+            .text('Billing Details:', { underline: false })
+            .moveDown(0.5)
+            .font('Helvetica')
+            .text(`Customer Name: ${customerName}`, { align: 'left' })
+            .moveDown(1);
+        doc.font('Helvetica-Bold')
+            .text('Payment Details:', { underline: false })
+            .moveDown(1)
+            .font('Helvetica')
+            .text(`Payment Method: ${order.paymentMethod}`, { align: 'left' })
+            .moveDown(0.5)
+            .font('Helvetica')
+            .text(`Payment Status: ${order.status}`, { align: 'left' })
+            .moveDown(1);
+
+        doc.font('Helvetica-Bold')
+            .fontSize(12)
+            .text('Order Summary', { underline: false });
+
+        const startX = 50;
+        const columnWidths = { product: 250, quantity: 80, price: 80, total: 80 };
+        let y = doc.y + 10;
+
+        doc.font('Helvetica-Bold')
+            .text('Product', startX, y, { width: columnWidths.product })
+            .text('Quantity', startX + columnWidths.product, y, { width: columnWidths.quantity, align: 'right' })
+            .text('Price', startX + columnWidths.product + columnWidths.quantity, y, { width: columnWidths.price, align: 'right' })
+            .text('Total', startX + columnWidths.product + columnWidths.quantity + columnWidths.price, y, { width: columnWidths.total, align: 'right' })
+            .moveDown(0.5)
+            .moveTo(startX, doc.y)
+            .lineTo(550, doc.y)
+            .stroke();
+
+        let runningTotal = 0;
+        order.items.forEach((item) => {
+            y = doc.y + 5;
+            const itemTotal = item.price * item.quantity;
+            runningTotal += itemTotal;
+
+            doc.font('Helvetica')
+                .text(item.productId.productName, startX, y, { width: columnWidths.product })
+                .text(`${item.quantity}`, startX + columnWidths.product, y, { width: columnWidths.quantity, align: 'right' })
+                .text(`RS.${item.price.toFixed(2)}`, startX + columnWidths.product + columnWidths.quantity, y, { width: columnWidths.price, align: 'right' })
+                .text(`RS.${itemTotal.toFixed(2)}`, startX + columnWidths.product + columnWidths.quantity + columnWidths.price, y, { width: columnWidths.total, align: 'right' })
+                .moveDown(0.5);
+        });
+
+    
+        doc.moveDown(1)
+            .moveTo(startX, doc.y)
+            .lineTo(550, doc.y)
+            .stroke()
+            .moveDown(0.5);
+
+        const summaryStartY = doc.y; 
+        const lineHeight = 15; 
+
+        doc.font('Helvetica-Bold').text('Subtotal', 400, summaryStartY, { width: 100, align: 'right' });
+        doc.font('Helvetica').text(`RS.${runningTotal.toFixed(2)}`, 500, summaryStartY, { width: 50, align: 'right' });
+
+        doc.font('Helvetica-Bold').text('Discount', 400, summaryStartY + lineHeight, { width: 100, align: 'right' });
+        doc.font('Helvetica').text('RS.0.00', 500, summaryStartY + lineHeight, { width: 50, align: 'right' });
+
+        doc.font('Helvetica-Bold').text('Delivery Charge', 400, summaryStartY + lineHeight * 2, { width: 100, align: 'right' });
+        doc.font('Helvetica').text('RS.40.00', 500, summaryStartY + lineHeight * 2, { width: 50, align: 'right' });
+
+        doc.font('Helvetica-Bold').text('Grand Total', 400, summaryStartY + lineHeight * 3, { width: 100, align: 'right' });
+        doc.font('Helvetica-Bold').text(`RS.${(runningTotal + 40)}`, 500, summaryStartY + lineHeight * 3, { width: 50, align: 'right' });
+
+
+        
+
+        doc.moveDown(3)
+            .font('Helvetica')
+            .text('Thanks for choosing Soudora', 50, null, { width: 550, align: 'center' })
+            .text('Return & Exchange Policy: www.soundora.com/return-policy', 50, null, { width: 550, align: 'center' })
+            .moveDown(1)
+            .font('Helvetica-Bold')
+            .text('Contact Us: 9895861278', 50, null, { width: 550, align: 'center' })
+            .text('Email: contact@soundora.com', 50, null, { width: 550, align: 'center' })
+            .moveDown(1)
+            .font('Helvetica')
+            .text('Visit Us: www.soundora.com', 50, null, { width: 550, align: 'center' })
+
+        doc.end();
+
+        writeStream.on('finish', () => {
+            res.download(invoicePath, `invoice-${orderId}.pdf`, (err) => {
+                if (err) {
+                    console.error('Download error:', err);
+                    res.status(500).send('Error downloading invoice');
+                }
+            });
+        });
+
+    } catch (error) {
+        console.error('Invoice Generation Error:', error);
+        res.status(500).send('Error generating invoice');
+    }
+};
 
 
 module.exports = { 
@@ -359,5 +523,6 @@ module.exports = {
     addCheckoutAddress,
     placeOrder,
     viewOrder,
-    cancelOrder
+    cancelOrder,
+    generateInvoice
 };

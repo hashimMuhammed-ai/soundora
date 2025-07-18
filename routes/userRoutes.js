@@ -68,7 +68,7 @@ router.post("/editCheckoutAddress", checkoutCtrl.editCheckoutAddress)
 router.post("/addCheckoutAddress", checkoutCtrl.addCheckoutAddress)
 router.get("/viewOrder/:orderId", checkoutCtrl.viewOrder)
 router.patch("/cancelOrder/:orderId", checkoutCtrl.cancelOrder)
-
+router.get('/invoice/:id', checkoutCtrl.generateInvoice);
 
 
 
