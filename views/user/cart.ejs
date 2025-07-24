@@ -14,6 +14,11 @@
     width: fit-content;
   }
 
+  .remove-btn {
+    border: none;
+    border-radius: 10px;
+  }
+
   .quantity-btn {
     background: #000000;
     border: none;
@@ -147,9 +152,9 @@
                     </td>
                     <td class="cart__price">₹<%= item.totalPrice.toFixed(2) %></td>
                     <td class="cart__close">
-                      <a href="javascript:void(0);" onclick="confirmRemove('<%= item.productId._id %>')">
+                      <button href="javascript:void(0);" class="remove-btn" onclick="confirmRemove('<%= item.productId._id %>')">
                         <i class="fa fa-close"></i>
-                      </a>
+                      </button>
                     </td>
                   </tr>
                   <% }); %>
@@ -216,46 +221,53 @@
   })
 
   function confirmRemove(productId) {
-    const cartRow = document.querySelector(`a[onclick="confirmRemove('${productId}')"]`).closest('tr');
+    const cartRow = document.querySelector(`button[onclick="confirmRemove('${productId}')"]`).closest('tr'); // Adjusted for button
 
     Swal.fire({
-      title: 'Are you sure?',
-      text: "This item will be removed from your cart.",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, remove it!'
+        title: 'Are you sure?',
+        text: "This item will be removed from your cart.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, remove it!'
     }).then((result) => {
-      if (result.isConfirmed) {
-        fetch(`/cart/remove/${productId}`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json"
-          }
-        })
-          .then(response => response.json())
-          .then(data => {
-            if (data.success) {
-              cartRow.remove();
-              calculateTotalPrice();
-              const remainingItems = document.querySelectorAll('tr').length;
-              if (remainingItems <= 1) {
-                location.reload();
-              }
-              Swal.fire('Removed!', 'Your item has been removed.', 'success');
-            } else {
-              Swal.fire('Error!', data.message, 'error');
-            }
-          })
-          .catch(error => {
-            console.error("Error:", error);
-            Swal.fire('Error!', 'Something went wrong.', 'error');
-          });
-      }
+        if (result.isConfirmed) {
+            fetch(`/cart/remove/${productId}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        cartRow.remove();
+                        calculateTotalPrice();
+                        const remainingItems = document.querySelectorAll('tr').length - 1; // Adjust for header row if present
+                        // Update cart badge with new items count
+                        const cartBadge = document.querySelector('.cart-badge');
+                        if (cartBadge) {
+                            cartBadge.textContent = data.itemsCount || 0;
+                        }
+                        if (remainingItems <= 0) {
+                            // Optional: Redirect or show empty cart message instead of reload
+                            // location.reload();
+                            Swal.fire('Empty Cart!', 'Your cart is now empty.', 'info');
+                        } else {
+                            Swal.fire('Removed!', 'Your item has been removed.', 'success');
+                        }
+                    } else {
+                        Swal.fire('Error!', data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    Swal.fire('Error!', 'Something went wrong.', 'error');
+                });
+        }
     });
-  }
-
+}
   function calculateTotalPrice() {
     const cartRows = document.querySelectorAll('tr');
     let subtotal = 0;

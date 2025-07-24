@@ -132,6 +132,7 @@ const verifyOtp = async (req, res) => {
       const hashPassword = await bcrypt.hash(user.password, 10);
       const userData = await User.create({name: user.name, email: user.email, phone: user.phone, password: hashPassword});
       req.session.user = userData._id;
+      req.session.userName = userData.name;
       res.status(200).json({
       success: true,
       message: 'OTP verified successfully',
@@ -170,7 +171,7 @@ const resendOtp = async (req, res) => {
 const getLogin = (req, res) => {
   try {
     if(!req.session.user){
-      const error = req.flash('error');
+      const error = req.flash('error')[0] || res.locals.error || '';
       res.render('user/login',{error: error[0]});
     }else {
       res.redirect('/')
@@ -197,6 +198,7 @@ const postLogin = async (req, res) => {
       return res.redirect('/login');
     }
     req.session.user = user._id;
+    req.session.userName = user.name;
     res.redirect('/');
   }
   catch (error) {

@@ -74,6 +74,21 @@
             display: block;
         }
 
+
+        .cart-badge {
+            position: absolute;
+            right: -65px;
+            top: 20px;
+            background: #e53637;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            margin-left: 5px;
+            box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease-in-out;
+        }
+
         .sign-in-link {
             color: #333;
             font-size: 16px;
@@ -333,11 +348,11 @@
                 </div>
                 <div class="col-lg-3 col-md-3">
                     <div class="header__nav__option" style="margin-right: -100px; margin-top: 9px;">
-                        <% var user=user || null; %>
-                        <% if (user) { %>
+    
+                        <% if (locals.userName) { %>
                             <div class="dropdown">
                                 <a href="#" class="sign-in-link dropdown-toggle" id="userDropdown">
-                                    <%= user.name %>
+                                    <%= locals.userName %>
                                 </a>
                                 <div class="dropdown-content" id="userDropdownContent">
                                     <a href="/userProfile">Profile</a>
@@ -349,9 +364,10 @@
                             <a href="/login" class="sign-in-link">Login</a>
                         <% } %>
                        <a href="/wishlist"><i class="fa fa-heart" style="font-size: 18px;"></i></a>
-                       <a href="/cart"><i class="fa fa-shopping-bag" style="font-size: 18px;"></i></a>
-
-                        <div class="price" style="margin-bottom: 5px;">₹0.00</div>
+                       <a href="/cart" class="cart-container">
+                        <i class="fa fa-shopping-bag" style="font-size: 18px;"></i>
+                       </a>
+                       <span class="cart-badge"><%= locals.cartItemCount || 0 %></span>
                     </div>
                 </div>
             </div>
@@ -389,8 +405,7 @@
             </a>
         <% } %>
     </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
         $(document).ready(function() {
             // Mobile menu toggle functionality
@@ -413,8 +428,61 @@
             $(window).on('load', function() {
                 $("#preloder").fadeOut();
             });
-        });
-    </script>
 
+            // AJAX for adding to cart
+            // $('.add-to-cart').on('click', function() {
+                
+            //     const productId = $(this).data('product-id');
+            //     const quantity = $(this).data('quantity') || 1; // Default to 1 if not set
+
+            //     $.ajax({
+            //         url: '/cart/add',
+            //         method: 'POST',
+            //         data: { productId, quantity },
+            //         success: function(response) {
+            //             if (response.success) {
+            //                 $('.cart-badge').text(response.itemsCount || 0);
+            //             } else {
+            //                 alert(response.message);
+            //             }
+            //         },
+            //         error: function() {
+            //             alert('Error adding to cart');
+            //         }
+            //     });
+            // });
+
+            // AJAX for removing from cart
+            // $('.remove-cart-item').on('click', function() {
+            //     const productId = $(this).data('product-id');
+            //     $.ajax({
+            //         url: `/cart/remove/${productId}`,
+            //         method: 'DELETE', // Adjust method if needed based on your route
+            //         success: function(response) {
+            //             if (response.success) {
+            //                 $('.cart-badge').text(response.itemsCount || 0);
+            //             } else {
+            //                 alert(response.message);
+            //             }
+            //         },
+            //         error: function() {
+            //             alert('Error removing from cart');
+            //         }
+            //     });
+            // });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+        const currentPath = window.location.pathname;
+        document.querySelectorAll('.header__menu ul li').forEach(li => {
+            const link = li.querySelector('a');
+            if (link.getAttribute('href') === currentPath) {
+                li.classList.add('active');
+            } else {
+                li.classList.remove('active');
+            }
+        });
+    });
+    </script>
 </body>
 </html>

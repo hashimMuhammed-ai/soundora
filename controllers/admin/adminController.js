@@ -30,7 +30,7 @@ const postLogin = async (req, res) => {
       return res.redirect('/admin/login')
     }
 
-    const isMatch = bcrypt.compare(password, admin.password);
+    const isMatch = await bcrypt.compare(password, admin.password);
     if(!isMatch){
       req.flash('error','Invalid Password');
       return res.redirect('/admin/login');

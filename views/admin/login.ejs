@@ -4,26 +4,104 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login</title>
-    <link rel="stylesheet" href="/css/admin/login.css">;
+    <link rel="stylesheet" href="/css/admin/login.css">
+    <style>
+        .error-message {
+            color: red;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+            display: none; /* Hidden by default */
+            text-align: center;
+        }
+        .input-group.invalid .error-message {
+            display: block; /* Show when parent has .invalid class */
+        }
+    </style>
 </head>
 <body>
     <div class="login-container">
-        
         <h1>Admin Login</h1>
         <% if (error) { %>
-            <div style="color: red; margin-bottom: 1rem; text-align: center;;"> <%= error %> </div>
+            <div style="color: red; margin-bottom: 1rem; text-align: center;"> <%= error %> </div>
         <% } %>
-        <form action="/admin/login" method="POST">
-            <div class="input-group">
+        <form action="/admin/login" method="POST" id="loginForm">
+            <div class="input-group" id="emailGroup">
                 <label for="email" class="email">Email</label>
-                <input type="email" placeholder="Email Address" name="email" >
+                <input type="email" placeholder="Email Address" name="email" id="email">
+                <div id="emailError" class="error-message">Please enter a valid email address.</div>
             </div>
-            <div class="input-group">
+            <div class="input-group" id="passwordGroup">
                 <label for="password" class="password">Password</label>
-                <input type="password" placeholder="Password" name="password" >
+                <input type="password" placeholder="Password" name="password" id="password">
+                <div id="passwordError" class="error-message">Please enter a password.</div>
             </div>
             <button type="submit" class="login-btn">Login</button>
         </form>
     </div>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const emailGroup = document.getElementById('emailGroup');
+        const passwordGroup = document.getElementById('passwordGroup');
+        const emailError = document.getElementById('emailError');
+        const passwordError = document.getElementById('passwordError');
+
+        // Email validation function
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        // Real-time validation on input
+        emailInput.addEventListener('input', function() {
+            if (emailInput.value.trim() === '') {
+                emailGroup.classList.add('invalid');
+                emailError.textContent = 'Email cannot be empty.';
+            } else if (!validateEmail(emailInput.value)) {
+                emailGroup.classList.add('invalid');
+                emailError.textContent = 'Please enter a valid email address.';
+            } else {
+                emailGroup.classList.remove('invalid');
+            }
+        });
+
+        // Clear email error when focusing on password
+        passwordInput.addEventListener('focus', function() {
+            if (validateEmail(emailInput.value)) {
+                emailGroup.classList.remove('invalid');
+            }
+        });
+
+        // Form submission validation
+        form.addEventListener('submit', function(event) {
+            let isValid = true;
+
+            if (emailInput.value.trim() === '') {
+                emailGroup.classList.add('invalid');
+                emailError.textContent = 'Email cannot be empty.';
+                isValid = false;
+            } else if (!validateEmail(emailInput.value)) {
+                emailGroup.classList.add('invalid');
+                emailError.textContent = 'Please enter a valid email address.';
+                isValid = false;
+            } else {
+                emailGroup.classList.remove('invalid');
+            }
+
+            if (passwordInput.value.trim() === '') {
+                passwordGroup.classList.add('invalid');
+                passwordError.textContent = 'Please enter a password.';
+                isValid = false;
+            } else {
+                passwordGroup.classList.remove('invalid');
+            }
+
+            if (!isValid) {
+                event.preventDefault(); // Prevent form submission if invalid
+            }
+        });
+    </script>
 </body>
 </html>

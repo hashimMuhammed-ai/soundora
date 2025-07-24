@@ -1,6 +1,8 @@
 <%- include("../../views/partials/user/header") %>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
 
 
 <style>
@@ -455,8 +457,8 @@
                   <div class="info-value">
                       <% if (order.paymentStatus === 'refunded') { %>
                           <span class="status status-delivered">Refunded</span>
-                      <% } else if (order.paymentStatus === 'paid' || order.orderStatus === 'delivered' || order.orderStatus === 'Return rejected' || order.orderStatus === 'Return approved' || order.orderStatus === 'Return requested') { %>
-                          <span class="status status-delivered">Paid</span>
+                      <% } else if (order.paymentStatus === 'success' || order.orderStatus === 'delivered' || order.orderStatus === 'Return rejected' || order.orderStatus === 'Return approved' || order.orderStatus === 'Return requested') { %>
+                          <span class="status status-delivered">Success</span>
                       <% } else if (order.orderStatus === 'cancelled') { %>
                           <span class="status status-cancelled">Cancelled</span>
                       <% } else if (order.orderStatus === 'failed') { %>
@@ -574,7 +576,7 @@
             </table>
             <% if (order.items && order.items.length > 0) { %>
     <div class="action-row">
-        <% if (order.orderStatus !== 'cancelled' && order.orderStatus !== 'delivered' && order.orderStatus !== 'returned' &&  order.orderStatus !== 'failed') { %>
+        <% if (order.orderStatus !== 'cancelled' && order.orderStatus !== 'delivered' && order.orderStatus !== 'returned' &&  order.orderStatus !== 'failed' && order.orderStatus !== 'Return approved' && order.orderStatus !== 'Return requested' && order.orderStatus !== 'Return rejected') { %>
             <button class="btn-cancel" onclick="openModal()">
                 <i class="fas fa-times-circle"></i> Cancel Order
             </button>
@@ -763,7 +765,6 @@ function openReturnModal(orderId) {
 
     async function retryPayment(orderId) {
         try {
-
         const response = await fetch(`/retryPayment/${orderId}`, {
             method: 'POST',
             headers: {
@@ -772,6 +773,7 @@ function openReturnModal(orderId) {
             body: JSON.stringify({orderId})
         })
         const data = await response.json();
+        console.log(data);
 
         
         if (data.success) {
@@ -779,8 +781,8 @@ function openReturnModal(orderId) {
                     key: data.key,
                     amount: data.amount,
                     currency: data.currency,
-                    name: "Timeless Aura",
-                    description: "Watch Purchase Retry",
+                    name: "Soundora",
+                    description: "Speaker Purchase Retry",
                     order_id: data.order_id,
                     handler: function (response) {
                         Swal.fire({
