@@ -42,7 +42,6 @@ const getOrdersPage = async (req, res) => {
 const updateOrder = async (req, res) => {
     try {
         const { orderId, status } = req.body
-        console.log("Updating order:", orderId, "to status:", status);
 
         if (!orderId || !status) {
             return res.status(400).json({ success: false, message: "order ID and status are required" })
@@ -110,71 +109,50 @@ const cancelOrder = async (req, res) => {
 };
 
 
-// const approveReturn = async (req, res) => {
-//     try {
-//         const { orderId } = req.body
-//         if (!orderId) {
-//             return res.status(404).json({ success: false, message: "order not found" })
-//         }
-//         const order = await Order.findByIdAndUpdate(orderId, { status: 'Return approved' })
+const approveReturn = async (req, res) => {
+    try {
+        const { orderId } = req.body
+        if (!orderId) {
+            return res.status(404).json({ success: false, message: "order not found" })
+        }
+        const order = await Order.findByIdAndUpdate(orderId, { status: 'Return approved' })
 
-//         const userId = order.user_id
+        const userId = order.userId
 
-//         for (let item of order.order_items) {
-//             await Product.findByIdAndUpdate(item.productId, { $inc: { quantity: item.quantity } });
-//         }
+        for (let item of order.items) {
+            await Product.findByIdAndUpdate(item.productId, { $inc: { quantity: item.quantity } });
+        }
 
-//         let wallet = await Wallet.findOne({ userId });
-//         if (!wallet) {
-//             wallet = new Wallet({
-//                 userId,
-//                 balance: 0,
-//                 transactions: []
-//             });
-//         }
+        res.status(200).json({ success: true, message: "Return approved" })
+    } catch (error) {
+        console.log("error approving return", error)
+        res.status(500).json({ success: false, message: "internal server error" })
+    }
+}
 
-//         wallet.balance += order.total;
-//         wallet.transactions.push({
-//             type: 'credit',
-//             amount: order.total,
-//             description: `Refund for returned order`,
-//             status: 'completed'
-//         });
+const rejectReturn = async (req, res) => {
+    try {
+        const { reason } = req.body
+        const orderId = req.params.orderId
 
-//         await wallet.save();
+        if (!orderId) {
+            return res.status(404).json({ success: false, message: "Order Id not found" })
+        }
+        const order = await Order.findById(orderId)
+        if (!order) {
+            return res.status(404).json({ success: false, message: "order not found" })
+        }
+        order.status = "Return rejected"
+        order.adminReturnStatus = reason
 
-//         res.status(200).json({ success: true, message: "Return approved" })
-//     } catch (error) {
-//         console.log("error approving return", error)
-//         res.status(500).json({ success: false, message: "internal server error" })
-//     }
-// }
+        await order.save()
 
-// const rejectReturn = async (req, res) => {
-//     try {
-//         const { reason } = req.body
-//         const orderId = req.params.orderId
-//         console.log("Rejecting return with reason:", reason);
-//         console.log("Order ID:", orderId);
-
-//         if (!orderId) {
-//             return res.status(404).json({ success: false, message: "order not found" })
-//         }
-//         const order = await Order.findById(orderId)
-//         if (!order) {
-//             return res.status(404).json({ success: false, message: "order not found" })
-//         }
-//         order.status = "Return rejected"
-//         order.adminReturnStatus = reason
-
-//         await order.save()
-
-//         res.status(200).json({ success: true, message: "Return rejected" })
-//     } catch (error) {
-//         console.log("error rejecting return", error)
-//         res.status(500).json({ success: false, message: "internal server error" })
-//     }
-// }
+        res.status(200).json({ success: true, message: "Return rejected" })
+    } catch (error) {
+        console.log("error rejecting return", error)
+        res.status(500).json({ success: false, message: "internal server error" })
+    }
+}
 
 // const getDateRange = (filterType, fromDate, toDate) => {
 //     const today = new Date();
@@ -598,8 +576,8 @@ module.exports = {
     getOrdersPage,
     updateOrder,
     cancelOrder,
-    // approveReturn,
-    // rejectReturn,
+    approveReturn,
+    rejectReturn,
     // getSalesReport,
     // getSalesReportPDF,
     // getSalesReportExcel

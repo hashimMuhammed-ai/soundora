@@ -54,8 +54,8 @@ router.post('/deleteImage', adminAuth, productCtrl.deleteSingleImage)
 router.get('/orders', adminAuth, orderCtrl.getOrdersPage)
 router.post('/updateOrder', adminAuth, orderCtrl.updateOrder)
 router.post('/cancelOrder', adminAuth, orderCtrl.cancelOrder)
-// router.post('/approveReturn', adminAuth, orderCtrl.approveReturn)
-// router.post('/rejectReturn/:orderId', adminAuth, orderCtrl.rejectReturn)
+router.post('/approveReturn', adminAuth, orderCtrl.approveReturn)
+router.post('/rejectReturn/:orderId', adminAuth, orderCtrl.rejectReturn)
 
 
 module.exports = router;

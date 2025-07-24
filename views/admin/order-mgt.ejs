@@ -17,6 +17,15 @@
             margin-top: 1rem;
         }
 
+        .status-select.pending { color: orange; }
+        .status-select.shipped { color: blue; }
+        .status-select.delivered { color: green; }
+        .status-select.cancelled { color: red; }
+        .status-select.return-requested { color: purple; }
+        .status-select.return-approved { color: green; }
+        .status-select.return-rejected { color: red; }
+
+
         .orders-table th,
         .orders-table td {
             padding: 1rem;
@@ -62,7 +71,7 @@
             background: linear-gradient(45deg, #ffa500, #ffd700);
             color: white;
             margin-right: 0.5rem;
-            margin-left: -50px;
+            margin-bottom: 5px;
         }
 
         .btn-cancel {
@@ -393,16 +402,13 @@ button:hover {
                                 <%= new Date(order.createdAt).toLocaleDateString() %>
                             </td>
                             <td>
-                                <select class="status-select" onchange="updateOrderStatus('<%= order._id %>', this)"
-                                    style="color: <%= order.status === 'pending' ? 'orange' 
-                                    : order.status === 'shipped' ? 'blue' 
-                                    : order.status === 'delivered' ? 'green' 
-                                    : order.status === 'cancelled' ? 'red' 
-                                    : order.status === 'Return requested' ? 'purple' 
-                                    : order.status === 'Return approved' ? 'green'
-                                    : order.status === 'Return rejected' ? 'red'
-                                    : 'black' %>" 
-                                    <%= order.status === 'cancelled' || order.status === 'delivered' || order.status === 'Return requested' || order.status === 'Return approved' || order.status === 'Return rejected' ? 'disabled' : '' %>>
+                              <select class="status-select <%= order.status.replace(/\s+/g, '-').toLowerCase() %>" 
+                                    onchange="updateOrderStatus('<%= order._id %>', this)"
+                                    <%= 
+                                        ['cancelled', 'delivered', 'Return requested', 'Return approved', 'Return rejected'].includes(order.status)
+                                        ? 'disabled' : '' 
+                                    %>>
+
                                     <option value="pending" <%= order.status === 'pending' ? 'selected' : '' %>>Pending</option>
                                     <option value="shipped" <%= order.status === 'shipped' ? 'selected' : '' %>>Shipped</option>
                                     <option value="delivered" <%= order.status === 'delivered' ? 'selected' : '' %>>Delivered</option>
@@ -420,7 +426,7 @@ button:hover {
                                 <%= order.paymentMethod %>
                             </td>
                             <td>
-                                <button class="btn btn-view" onclick="openModal(<%= index %>)" >View</button>
+                                <button class="btn btn-view" onclick="openModal('<%= index %>')" >View</button>
                                 <% if ( order.status !=='delivered'&&order.status !=='cancelled' && order.status !=='Return requested' && order.status !=='Return approved' && order.status !=='Return rejected') { %>
                                     <button class="btn btn-cancel" onclick="cancelOrder('<%= order._id %>')">Cancel
                                         </button>
@@ -635,7 +641,7 @@ button:hover {
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-       const ordersData = <%- JSON.stringify(orders) %>;
+        const ordersData = JSON.parse('<%- JSON.stringify(orders || []) %>');
 
 function openModal(index) {
     const order = ordersData[index];

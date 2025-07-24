@@ -855,8 +855,8 @@
                                             </div>
                                         </div>
                                         <div class="product-card__cta">
-                                            <button onclick="addToCart('<%= products[i]._id %>','<%= products[i].finalPrice %>')"
-                                                class="product-card__cart-btn">
+                                            <button  data-product-id="<%= products[i]._id %>" onclick="addToCart('<%= products[i]._id %>','<%= products[i].finalPrice %>')"
+                                                class="add-to-cart product-card__cart-btn">
                                                 <i class="fa-solid fa-cart-plus"></i>
                                                 Add to Cart
                                             </button>
@@ -939,7 +939,6 @@
 
                 const data = await response.json();
 
-
                 if (data.success) {
                     Toastify({
                         text: "Success\nProduct added to cart successfully",
@@ -962,10 +961,8 @@
                         },
                         avatar: "https://cdn-icons-png.flaticon.com/512/845/845646.png",
                     }).showToast();
+                    document.querySelector('.cart-badge').textContent = data.itemsCount || 0;
                 } else {
-                    // throw new Error(data.message || 'Login to add product to cart').then(() => {
-                    //     window.location.href = '/login';
-                    // });
                     Toastify({
                         text: "Error\n" + data.message || 'Login to add product to cart',
                         duration: 1500,
@@ -974,7 +971,7 @@
                         position: "right",
                         stopOnFocus: true,
                         style: {
-                            background: "#ffffff", // 
+                            background: "#ffffff",
                             color: "#dc3545",
                             boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.2)",
                             padding: "12px 20px",
@@ -986,7 +983,7 @@
                             animation: "fadeInUp 0.5s ease-in-out"
                         },
                         avatar: "https://cdn-icons-png.flaticon.com/512/190/190406.png",
-                    }).showToast()
+                    }).showToast();
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -998,7 +995,7 @@
                     position: "right",
                     stopOnFocus: true,
                     style: {
-                        background: "#ffffff", // 
+                        background: "#ffffff",
                         color: "#dc3545",
                         boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.2)",
                         padding: "12px 20px",
@@ -1013,7 +1010,6 @@
                 }).showToast();
             }
         }
-
 
         
 
