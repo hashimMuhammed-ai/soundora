@@ -6,6 +6,7 @@ const categoryCtrl = require('../controllers/admin/categoryController');
 const brandCtrl = require('../controllers/admin/brandController');
 const productCtrl = require('../controllers/admin/productController');
 const orderCtrl = require('../controllers/admin/orderController');
+const couponCtrl = require('../controllers/admin/couponController');
 const {adminLoginAuth, adminAuth} = require('../middlewares/auth');
 const multer = require('multer');
 const storage = require('../helpers/multer');
@@ -57,5 +58,11 @@ router.post('/cancelOrder', adminAuth, orderCtrl.cancelOrder)
 router.post('/approveReturn', adminAuth, orderCtrl.approveReturn)
 router.post('/rejectReturn/:orderId', adminAuth, orderCtrl.rejectReturn)
 
+
+//Coupon Management
+
+router.get('/coupons', adminAuth, couponCtrl.getCouponPage)
+router.post('/addCoupon', adminAuth, couponCtrl.addCoupon)
+router.patch('/toggle-coupon/:id', adminAuth, couponCtrl.toggleCoupon)
 
 module.exports = router;

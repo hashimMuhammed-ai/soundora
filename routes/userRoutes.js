@@ -73,12 +73,19 @@ router.post('/returnOrder/:orderId', userAuth, checkoutCtrl.returnOrder);
 router.get('/invoice/:id', userAuth, checkoutCtrl.generateInvoice);
 router.post("/validateCheckoutItems",userAuth, checkoutCtrl.validateCheckoutItems)
 
+
+router.post("/applyCoupon", userAuth, checkoutCtrl.applyCoupon)
+router.post('/removeCoupon', userAuth, checkoutCtrl.removeCoupon);
+
 //razorpay
 router.post("/createOrder", userAuth, razorpayCtrl.createOrder)
 router.post("/verifyPayment", userAuth, razorpayCtrl.verifyPayment);
 router.post("/retryPayment/:orderId", userAuth, razorpayCtrl.retryPayment);
 router.get("/paymentFailed/:orderId", userAuth, razorpayCtrl.paymentFailed);
 router.post("/verifyRetryPayment", userAuth, razorpayCtrl.verifyRetryPayment);
+
+
+
 
 
 

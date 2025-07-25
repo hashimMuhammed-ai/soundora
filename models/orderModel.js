@@ -95,6 +95,12 @@ const orderSchema = new mongoose.Schema({
   adminReturnStatus: {
     type: String
   },
+  couponApplied: {
+    type: String
+  },
+  discount: {
+    type: String
+  },
   orderDate: {
     type: Date,
     default: Date.now

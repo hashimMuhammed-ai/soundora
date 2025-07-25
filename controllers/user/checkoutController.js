@@ -3,6 +3,7 @@ const User = require('../../models/userModel');
 const Address = require('../../models/addressModel');
 const Product = require('../../models/productModel');
 const Order = require('../../models/orderModel');
+const Coupon = require('../../models/couponModel');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
@@ -36,12 +37,20 @@ const loadCheckout = async (req, res) => {
         let userAddress = addressDoc ? addressDoc.address : [];
 
         const user = await User.findById(req.session.user);
+        const date = new Date();
+        const coupon = await Coupon.find({
+            couponMinAmount: {$lte: cart.cartTotal},
+            isActive: true,
+            limit: {$gt: 0},
+            couponValidity: {$gte: date}
+        }).sort({couponDiscount: -1})
 
         
         res.render("user/checkout", {
             cart,
             user,
             userAddress,
+            coupon,
             messages: req.flash()
         });
 
@@ -156,7 +165,7 @@ const addCheckoutAddress = async (req, res) => {
 const placeOrder = async (req, res) => {
     try {
         const userId = req.session.user;
-        const { shippingAddress, paymentMethod } = req.body;
+        const { shippingAddress, paymentMethod, couponCode, discountAmount } = req.body;
 
         // Get user cart with populated products
         const cart = await Cart.findOne({ userId })
@@ -217,6 +226,7 @@ const placeOrder = async (req, res) => {
         const subtotal = cart.items.reduce((sum, item) => sum + item.totalPrice, 0);
         const shippingCharge = subtotal > 0 ? 40 : 0;
         const totalAmount = subtotal + shippingCharge;
+        const cleanedDiscount = parseFloat(discountAmount);
 
         // Prepare order items
         const orderItems = cart.items.map(item => ({
@@ -233,7 +243,9 @@ const placeOrder = async (req, res) => {
             shippingAddress: selectedAddress, 
             paymentMethod,
             totalAmount,
-            status: paymentMethod === 'cod' ? 'processing' : 'pending'
+            status: paymentMethod === 'cod' ? 'processing' : 'pending',
+            couponApplied: couponCode || null,
+            discount: cleanedDiscount
         });
 
         await order.save();
@@ -620,6 +632,87 @@ const validateCheckoutItems = async (req, res) => {
 }
 
 
+const applyCoupon = async (req, res) => {
+    try {
+
+        const { couponCode } = req.body;
+        const userId = req.session.user;
+
+        const cart = await Cart.findOne({userId});
+        if(!cart || cart.items.length === 0){
+            return res.status(400).json({success: false, message: 'Cart is empty'})
+        }
+        const subtotal = cart.cartTotal;
+
+        const coupon = await Coupon.findOne({ couponCode, isActive: true });
+        if (!coupon) {
+            return res.status(400).json({ success: false, message: 'Invalid or expired coupon' });
+        }
+        const currentDate = new Date();
+        if (coupon.couponValidity < currentDate) {
+            return res.status(400).json({ success: false, message: 'Coupon has expired' });
+        }
+        if (coupon.limit <= 0) {
+            return res.status(400).json({ success: false, message: 'Coupon has reached its limit' });
+        }
+
+        let discount = 0;
+        if (coupon.couponType === "percentage") {
+            discount = (subtotal * coupon.couponDiscount) / 100;
+        } else {
+            discount = coupon.couponDiscount;
+        }
+
+        if (coupon.couponMaxAmount && discount > coupon.couponMaxAmount) {
+            discount = coupon.couponMaxAmount;
+        }
+
+        let newTotal = subtotal - discount;
+
+        coupon.limit -= 1;
+
+        coupon.usageCount += 1;
+
+        await coupon.save();
+
+        return res.status(200).json({ success: true, message: 'Coupon applied successfully', discount, newTotal });
+
+    } catch (error) {
+        console.log("error applying coupon", error)
+        return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+}
+
+const removeCoupon = async (req, res) => {
+    try {
+        const { couponCode, subtotal } = req.body;
+        const coupon = await Coupon.findOne({ couponCode: couponCode });
+
+        if (!coupon) {
+            return res.json({ success: false, message: 'Invalid coupon' });
+        }
+
+        coupon.limit += 1;
+        coupon.usageCount -= 1;
+        await coupon.save();
+
+        const cartTotal = subtotal;
+
+        res.json({
+            success: true,
+            cartTotal,
+            message: 'Coupon removed successfully'
+        });
+    } catch (error) {
+        console.error("Error removing coupon:", error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while removing coupon'
+        });
+    }
+}
+
+
 module.exports = { 
     loadCheckout,
     editCheckoutAddress,
@@ -629,5 +722,7 @@ module.exports = {
     cancelOrder,
     generateInvoice,
     returnOrder,
-    validateCheckoutItems
+    validateCheckoutItems,
+    applyCoupon,
+    removeCoupon
 };
