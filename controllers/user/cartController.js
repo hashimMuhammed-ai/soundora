@@ -18,7 +18,8 @@ const loadCart = async (req, res) => {
                 cart: {
                     items: [],
                     cartTotal: 0,
-                }
+                },
+                itemsCount: 0
             });
         }
 
@@ -41,7 +42,8 @@ const loadCart = async (req, res) => {
 
         res.render("user/cart", {
             user: req.session.userData, 
-            cart
+            cart,
+            itemsCount: cart.items.length
         });
 
     } catch (error) {
@@ -177,7 +179,7 @@ const removeCartItem = async (req, res) => {
 
         await cart.save();
 
-        return res.status(200).json({ success: true, message: "Item removed from cart" });
+        return res.status(200).json({ success: true, message: "Item removed from cart", itemsCount: cart.items.length });
 
     } catch (error) {
         console.error("Error removing item:", error);
