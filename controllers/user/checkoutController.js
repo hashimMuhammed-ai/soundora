@@ -2,6 +2,7 @@ const Cart = require('../../models/cartModel');
 const User = require('../../models/userModel');
 const Address = require('../../models/addressModel');
 const Product = require('../../models/productModel');
+const Wallet = require('../../models/walletModel');
 const Order = require('../../models/orderModel');
 const Coupon = require('../../models/couponModel');
 const PDFDocument = require('pdfkit');
@@ -360,6 +361,25 @@ const cancelOrder = async (req, res) => {
         order.cancellationReason = orderReason;
         await order.save();
 
+        let wallet = await Wallet.findOne({userId});
+        if(!wallet){
+            wallet = new Wallet({
+                userId,
+                balance: 0,
+                transactions: []
+            })
+        }
+        if(order.paymentMethod !== 'cod' && order.status === 'cancelled'){
+            wallet.balance += order.totalAmount;
+            wallet.transactions.push({
+                type: 'credit',
+                amount: order.totalAmount,
+                description: 'Refund for cancelled product',
+                status: 'completed'
+            }) 
+            await wallet.save();
+        }
+
         return res.status(200).json({ success: true, message: 'Order cancelled successfully' });
 
     } catch (error) {
@@ -497,13 +517,13 @@ const generateInvoice = async (req, res) => {
 doc.font('Helvetica').text(`RS.${runningTotal.toFixed(2)}`, valueX, summaryStartY, { width: valueWidth, align: 'right' });
 
 doc.font('Helvetica-Bold').text('Discount', labelX, summaryStartY + lineHeight, { width: 100, align: 'right' });
-doc.font('Helvetica').text('RS.0.00', valueX, summaryStartY + lineHeight, { width: valueWidth, align: 'right' });
+doc.font('Helvetica').text(`RS.${Number(order.discount).toFixed(2)}`, valueX, summaryStartY + lineHeight, { width: valueWidth, align: 'right' });
 
 doc.font('Helvetica-Bold').text('Delivery Charge', labelX, summaryStartY + lineHeight * 2, { width: 100, align: 'right' });
 doc.font('Helvetica').text('RS.40.00', valueX, summaryStartY + lineHeight * 2, { width: valueWidth, align: 'right' });
 
 doc.font('Helvetica-Bold').text('Grand Total', labelX, summaryStartY + lineHeight * 3, { width: 100, align: 'right' });
-doc.font('Helvetica-Bold').text(`RS.${(runningTotal + 40).toFixed(2)}`, valueX, summaryStartY + lineHeight * 3, { width: valueWidth, align: 'right' });
+doc.font('Helvetica-Bold').text(`RS.${(order.totalAmount).toFixed(2)}`, valueX, summaryStartY + lineHeight * 3, { width: valueWidth, align: 'right' });
 
 
         

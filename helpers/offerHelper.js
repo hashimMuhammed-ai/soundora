@@ -7,7 +7,7 @@ const getDiscountPrice = (product) => {
   const productOffer = product.productOffer || 0;
   const categoryOffer = product.category?.categoryOffer || 0;
   const maxOffer = Math.max(productOffer, categoryOffer);
-  const discountedPrice = Math.round(product.salePrice * (1 - maxOffer / 100));
+  const discountedPrice = Math.round(product.salePrice - product.salePrice * (maxOffer / 100));
 
   return {
     ...product.toObject(),

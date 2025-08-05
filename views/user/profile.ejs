@@ -194,6 +194,64 @@
 }
 
 
+/* Referral Section Styles */
+.referral-section {
+  margin-top: 20px;
+  margin-bottom: 9px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.referral-section h6 {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.referral-section p {
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.referral-code {
+  font-weight: bold;
+  color: #fb7806;
+  font-size: 1rem;
+}
+
+.referral-link {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #fff;
+  font-size: 0.9rem;
+  color: #333;
+  word-break: break-all;
+}
+
+.copy-btn {
+  margin-top: 10px;
+  background: linear-gradient(45deg, #ffa500, #ffd700);
+  border: none;
+  color: #000;
+  font-weight: 500;
+  padding: 8px 15px;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.copy-btn:hover {
+  background: linear-gradient(45deg, #ff8c00, #ffc000);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(255, 165, 0, 0.2);
+  color: #000;
+}
+
+
     /* Wallet Tab Styles */
     #wallet {
       padding: 20px;
@@ -650,6 +708,13 @@
                   <p class="card-text"><strong>Email:</strong>
                     <%= user.email %>
                   </p>
+                  <div class="referral-section">
+                    <h6>Invite Friends</h6>
+                    <p>Your Referral Code: <span class="referral-code"><%= user.referralCode %></span></p>
+                    <p>Share this link to invite friends and earn rewards:</p>
+                    <input type="text" class="referral-link" value="<%= baseUrl %>/signup?ref=<%= user.referralCode %>" readonly>
+                    <button class="copy-btn" onclick="copyReferralLink()">Copy Link</button>
+                  </div>
                   <button class="btn btn-sm btn-success">Edit Profile</button>
                   <a href="/change-password" class="btn btn-sm btn-success">Change Password</a>
                 </div>
@@ -800,7 +865,7 @@
                       </p>
 
                       <h3>Add Money to Wallet</h3>
-                      <form onsubmit="addMoney()">
+                      <form onsubmit="addMoney(event)">
                         <div class="form-group">
                           <input type="number" name="amount" class="form-control" placeholder="Enter amount" required>
                         </div>
@@ -941,6 +1006,11 @@
   function addMoney(event) {
     event.preventDefault();
     const amount = document.querySelector('input[name="amount"]').value;
+
+    if (!amount || isNaN(amount) || Number(amount) <= 0) {
+      Swal.fire('Invalid Input', 'Please enter a valid amount', 'warning');
+      return;
+    }
 
     fetch('/addMoney', {
       method: 'POST',
@@ -1144,6 +1214,28 @@
       });
     }
   });
+
+  function copyReferralLink() {
+  const referralLinkInput = document.querySelector('.referral-link');
+  referralLinkInput.select();
+  try {
+    document.execCommand('copy');
+    Swal.fire({
+      icon: 'success',
+      title: 'Copied!',
+      text: 'Referral link copied to clipboard!',
+      timer: 1500,
+      showConfirmButton: false,
+    });
+  } catch (err) {
+    console.error('Failed to copy referral link:', err);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Failed to copy referral link. Please copy it manually.',
+    });
+  }
+}
 </script>
 
 

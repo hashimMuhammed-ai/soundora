@@ -179,8 +179,8 @@
           <h6>Cart total</h6>
           <ul>
             <li>Subtotal <span>₹<%= cart.cartTotal.toFixed(2) %></span></li>
-            <li>Shipping <span>₹0.00</span></li>
-            <li>Total <span id="cart-total">₹<%= cart.cartTotal.toFixed(2) %></span></li>
+            <li>Shipping <span>₹40.00</span></li>
+            <li>Total <span id="cart-total">₹<%= (cart.cartTotal + 40).toFixed(2) %></span></li>
           </ul>
           <% if (cart.items.length !==0) { %>
             <a href="/checkout" id="checkout-btn" class="primary-btn">Proceed to checkout</a>
@@ -291,7 +291,7 @@
         li.querySelector('span').textContent = `₹${subtotal.toFixed(2)}`;
       }
       if (text === 'Total') {
-        li.querySelector('span').textContent = `₹${subtotal.toFixed(2)}`;
+        li.querySelector('span').textContent = `₹${(subtotal + 40).toFixed(2)}`;
       }
     });
 

@@ -6,6 +6,7 @@ const cartCtrl = require('../controllers/user/cartController')
 const checkoutCtrl = require('../controllers/user/checkoutController');
 const razorpayCtrl = require('../controllers/user/razorpayController');
 const wishlistCtrl = require('../controllers/user/wishlistController');
+const walletCtrl = require('../controllers/user/walletController');
 const passport = require('passport');
 const profileCtrl = require('../controllers/user/profileController');
 const {userLoginAuth, userAuth} = require('../middlewares/auth');
@@ -89,6 +90,10 @@ router.post("/verifyRetryPayment", userAuth, razorpayCtrl.verifyRetryPayment);
 router.get("/wishlist", userAuth, wishlistCtrl.loadWishlist)
 router.post("/addToWishlist", userAuth, wishlistCtrl.addToWishlist)
 router.delete("/wishlist/remove/:productId", userAuth, wishlistCtrl.removeWishlistItem)
+
+//Wallet Management
+router.post("/addMoney", userAuth, walletCtrl.addMoney);
+
 
 
 

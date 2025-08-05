@@ -8,52 +8,186 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/css/user/signup.css">
   <style>
-   
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("/img1/signup-logo.jpg");
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center;
+      overflow: hidden; /* Prevent page scrolling */
+    }
+    .login-container {
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 0.75rem;
+      color: #fff;
+      width: 600px; /* Consistent width to fit all fields */
+      padding: 1rem; /* Reduced padding to minimize height */
+      margin-right: 594px;
+      display: flex;
+      flex-direction: column;
+      height: auto; /* Removed fixed height to adapt to content */
+      max-height: 85vh; /* Limit height to fit within viewport */
+      overflow-y: hidden; /* Prevent internal scrolling */
+    }
+    .speaker-image {
+      width: 300px; /* Reduced logo size */
+      height: 80px;
+      margin: 0; /* Remove top and bottom margins */
+      align-self: center; /* Center the logo */
+    }
+    h1 {
+      color: #dedbdb;
+      margin: 0.5rem 0; /* Reduced top and bottom margin */
+      font-size: 2rem;
+      text-align: center; /* Center the title */
+    }
+    .input-group {
+      margin-bottom: 0.6rem; /* Further reduced margin to save space */
+    }
+    input {
+      width: 100%;
+      padding: 8px; /* Further reduced padding */
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.85rem; /* Further reduced font size */
+      transition: border-color 0.3s;
+      outline: none;
+    }
+    input:focus {
+      border-color: #667eea;
+    }
+    .login-btn {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 8px 16px; /* Further reduced padding */
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem; /* Further reduced font size */
+      cursor: pointer;
+      width: 100%;
+      transition: transform 0.2s;
+    }
+    .login-btn:hover {
+      transform: translateY(-2px);
+    }
+    .email, .password {
+      display: block;
+      margin-bottom: 0.2rem; /* Further reduced margin */
+      font-weight: bold;
+    }
+    .input-row {
+      display: flex;
+      gap: 0.3rem; /* Further reduced gap */
+    }
+    .input-group {
+      flex: 1;
+    }
+    .social-line {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem; /* Further reduced gap */
+      color: #d1d5db;
+      font-size: 0.8rem; /* Reduced font size */
+      margin-top: 0.5rem; /* Reduced margin */
+    }
+    .line {
+      flex-grow: 1;
+      height: 1px;
+      background-color: #d1d5db;
+    }
+    .google-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem; /* Further reduced gap */
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+      padding: 0.6rem; /* Reduced padding */
+      border-radius: 4px;
+      border: 1px solid #d1d5db;
+      text-decoration: none;
+      margin-top: 0.5rem; /* Reduced margin */
+      width: 100%;
+      text-align: center;
+      font-size: 0.85rem; /* Reduced font size */
+    }
+    .login-link {
+      text-align: center;
+      font-size: 0.8rem; /* Reduced font size */
+      color: #d1d5db;
+      margin-top: 0.5rem; /* Reduced margin */
+    }
+    .login-link a {
+      color: #667eea;
+      text-decoration: none;
+    }
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+    .signup-label {
+      margin-top: -15px;
+    }
   </style>
 </head>
 
 <body>
-  <div class="form-container">
+  <div class="login-container">
     <div class="logo-container">
-      <img src="/img1/logo.png" class="signup-logo" alt="logo">
+      <img src="/img1/logo.png" class="speaker-image" alt="logo">
     </div>
-    <h1 class="title">SIGN UP</h1>
+    <h1 class="signup-label">SIGN UP</h1>
     <% if (error) { %>
-      <p class="message"><%= error %></p>
+      <p class="message" style="color: #f87171; text-align: center; font-size: 0.85rem; margin: 0.3rem 0;"><%= error %></p>
     <% } %>
-       
     <form id="signform" action="/signup" method="POST">
-      <div class="input-group">
-        <label for="name">Full Name</label>
-        <input type="text" name="name" id="name" placeholder="Enter your name">
-        <div id="error1" class="error-message"></div>
+      <div class="input-row">
+        <div class="input-group">
+          <span class="email">Full Name</span>
+          <input type="text" name="name" id="name" placeholder="Enter your name">
+          <div id="error1" class="error-message" style="color: #f87171; font-size: 0.75rem; display: none;"></div>
+        </div>
+        <div class="input-group">
+          <span class="email">Email</span>
+          <input type="email" name="email" id="email" placeholder="Enter your email">
+          <div id="error2" class="error-message" style="color: #f87171; font-size: 0.75rem; display: none;"></div>
+        </div>
       </div>
       
-      <div class="input-group">
-        <label for="email">Email</label>
-        <input type="email" name="email" id="email" placeholder="Enter your email">
-        <div id="error2" class="error-message"></div>
+      <div class="input-row">
+        <div class="input-group">
+          <span class="email">Mobile</span>
+          <input type="text" name="phone" id="phone" placeholder="Enter mobile number">
+          <div id="error3" class="error-message" style="color: #f87171; font-size: 0.75rem; display: none;"></div>
+        </div>
+        <div class="input-group">
+          <span class="password">Password</span>
+          <input type="password" id="password" name="password" placeholder="Create password">
+          <div id="error4" class="error-message" style="color: #f87171; font-size: 0.75rem; display: none;"></div>
+        </div>
       </div>
       
-      <div class="input-group">
-        <label for="phone">Mobile</label>
-        <input type="text" name="phone" id="phone" placeholder="Enter mobile number">
-        <div id="error3" class="error-message"></div>
+      <div class="input-row">
+        <div class="input-group">
+          <span class="password">Confirm Password</span>
+          <input type="password" id="confirm-password" name="Cpassword" placeholder="Confirm password">
+          <div id="error5" class="error-message" style="color: #f87171; font-size: 0.75rem; display: none;"></div>
+        </div>
+        <div class="input-group">
+          <span class="email">Referral Code (optional)</span>
+          <input type="text" id="referralCode" name="referralCode" placeholder="Enter referral code">
+        </div>
       </div>
-      
-      <div class="input-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" placeholder="Create password">
-        <div id="error4" class="error-message"></div>
-      </div>
-      
-      <div class="input-group">
-        <label for="confirm-password">Confirm Password</label>
-        <input type="password" id="confirm-password" name="Cpassword" placeholder="Confirm password">
-        <div id="error5" class="error-message"></div>
-      </div>
-      
-      <button type="submit" class="btn">Sign Up</button>
+            
+      <button type="submit" class="login-btn">Sign Up</button>
       
       <div class="social-line">
         <div class="line"></div>
@@ -71,98 +205,97 @@
   </div>
 
   <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const nameid = document.getElementById('name');
-    const emailid = document.getElementById('email');
-    const phoneid = document.getElementById('phone');
-    const passid = document.getElementById('password');
-    const cpassid = document.getElementById('confirm-password');
-    const error1 = document.getElementById('error1');
-    const error2 = document.getElementById('error2');
-    const error3 = document.getElementById('error3');
-    const error4 = document.getElementById('error4');
-    const error5 = document.getElementById('error5');
-    const signform = document.getElementById('signform');
+    document.addEventListener("DOMContentLoaded", () => {
+      const nameid = document.getElementById('name');
+      const emailid = document.getElementById('email');
+      const phoneid = document.getElementById('phone');
+      const passid = document.getElementById('password');
+      const cpassid = document.getElementById('confirm-password');
+      const error1 = document.getElementById('error1');
+      const error2 = document.getElementById('error2');
+      const error3 = document.getElementById('error3');
+      const error4 = document.getElementById('error4');
+      const error5 = document.getElementById('error5');
+      const signform = document.getElementById('signform');
 
-    function validateName() {
-      const val = nameid.value.trim();
-      const pattern = /^[A-Za-z]+(?:\s[A-Za-z]+)*$/;
-      if (!val || !pattern.test(val)) {
-        error1.style.display = "block";
-        error1.innerHTML = !val ? "Name is required" : "Only letters allowed";
-        return false;
+      function validateName() {
+        const val = nameid.value.trim();
+        const pattern = /^[A-Za-z]+(?:\s[A-Za-z]+)*$/;
+        if (!val || !pattern.test(val)) {
+          error1.style.display = "block";
+          error1.innerHTML = !val ? "Name is required" : "Only letters allowed";
+          return false;
+        }
+        error1.style.display = "none";
+        return true;
       }
-      error1.style.display = "none";
-      return true;
-    }
 
-    function validateEmail() {
-      const val = emailid.value.trim();
-      const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-      if (!pattern.test(val)) {
-        error2.style.display = "block";
-        error2.innerHTML = !val ? "Email id is required" : "Please enter a valid email";
-        return false;
+      function validateEmail() {
+        const val = emailid.value.trim();
+        const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!pattern.test(val)) {
+          error2.style.display = "block";
+          error2.innerHTML = !val ? "Email id is required" : "Please enter a valid email";
+          return false;
+        }
+        error2.style.display = "none";
+        return true;
       }
-      error2.style.display = "none";
-      return true;
-    }
 
-    function validatePhone() {
-      const val = phoneid.value.trim();
-      const pattern = /^[6-9]\d{9}$/;
-      if (!pattern.test(val)) {
-        error3.style.display = "block";
-        error3.innerHTML = !val ? "Phone number is required" : "10-digit number required";
-        return false;
+      function validatePhone() {
+        const val = phoneid.value.trim();
+        const pattern = /^[6-9]\d{9}$/;
+        if (!pattern.test(val)) {
+          error3.style.display = "block";
+          error3.innerHTML = !val ? "Phone number is required" : "10-digit number required";
+          return false;
+        }
+        error3.style.display = "none";
+        return true;
       }
-      error3.style.display = "none";
-      return true;
-    }
 
-    function validatePassword() {
-      const val = passid.value.trim();
-      const pattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{6,20}$/;
-      if (!pattern.test(val)) {
-        error4.style.display = "block";
-        error4.innerHTML = !val ? "Password is required" : "Must have uppercase, lowercase, digit & special character";
-        return false;
+      function validatePassword() {
+        const val = passid.value.trim();
+        const pattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{6,20}$/;
+        if (!pattern.test(val)) {
+          error4.style.display = "block";
+          error4.innerHTML = !val ? "Password is required" : "Must have uppercase, lowercase, digit & special character";
+          return false;
+        }
+        error4.style.display = "none";
+        return true;
       }
-      error4.style.display = "none";
-      return true;
-    }
 
-    function validateConfirmPass() {
-      const passVal = passid.value.trim();
-      const confirmVal = cpassid.value.trim();
-      if (!confirmVal || passVal !== confirmVal) {
-        error5.style.display = "block";
-        error5.innerHTML = !confirmVal ? "Confirm password is required" : "Passwords don't match";
-        return false;
+      function validateConfirmPass() {
+        const passVal = passid.value.trim();
+        const confirmVal = cpassid.value.trim();
+        if (!confirmVal || passVal !== confirmVal) {
+          error5.style.display = "block";
+          error5.innerHTML = !val ? "Confirm password is required" : "Passwords don't match";
+          return false;
+        }
+        error5.style.display = "none";
+        return true;
       }
-      error5.style.display = "none";
-      return true;
-    }
 
-    nameid.addEventListener('blur', validateName);
-    emailid.addEventListener('blur', validateEmail);
-    phoneid.addEventListener('blur', validatePhone);
-    passid.addEventListener('blur', validatePassword);
-    cpassid.addEventListener('blur', validateConfirmPass);
+      nameid.addEventListener('blur', validateName);
+      emailid.addEventListener('blur', validateEmail);
+      phoneid.addEventListener('blur', validatePhone);
+      passid.addEventListener('blur', validatePassword);
+      cpassid.addEventListener('blur', validateConfirmPass);
 
-    signform.addEventListener('submit', (e) => {
-      const nameValid = validateName();
-      const emailValid = validateEmail();
-      const phoneValid = validatePhone();
-      const passValid = validatePassword();
-      const confirmValid = validateConfirmPass();
+      signform.addEventListener('submit', (e) => {
+        const nameValid = validateName();
+        const emailValid = validateEmail();
+        const phoneValid = validatePhone();
+        const passValid = validatePassword();
+        const confirmValid = validateConfirmPass();
 
-      if (!nameValid || !emailValid || !phoneValid || !passValid || !confirmValid) {
-        e.preventDefault();
-      }
+        if (!nameValid || !emailValid || !phoneValid || !passValid || !confirmValid) {
+          e.preventDefault();
+        }
+      });
     });
-  });
-</script>
-
+  </script>
 </body>
 </html>

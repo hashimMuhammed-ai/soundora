@@ -291,7 +291,7 @@
                 <% if(!brand.isBlocked) { %>
                   <a href="#" onclick="blockBrand('<%=brand._id%>', this)" class="btn-action btn-danger">Block</a>
                 <% } else { %>
-                  <a href="#" onclick="unblockBrand('<%=brand._id%>', this)" class="btn-action btn-success">Unblock</a>
+                  <a href="#" onclick="blockBrand('<%=brand._id%>', this)" class="btn-action btn-success">Unblock</a>
                 <% } %>
                 <a href="#" 
                    onclick="confirmDelete('<%=brand._id%>', '<%=brand.brandName%>')" 
@@ -415,13 +415,11 @@ function blockBrand(brandId, element) {
         statusCell.textContent = "Blocked";
         element.textContent = "Unblock";
         element.className = "btn-action btn-success";
-        element.onclick = function() { blockBrand(brandId, element); };
       } else {
         statusCell.className = "badge alert-success";
         statusCell.textContent = "Active";
         element.textContent = "Block";
         element.className = "btn-action btn-danger";
-        element.onclick = function() { blockBrand(brandId, element); };
       }
       
       Swal.fire({

@@ -576,15 +576,16 @@
                                         <i class="fas fa-credit-card me-2"></i>Select Payment Method
                                     </h6>
                                     <div class="payment-method">
+                                 <%if(cart.cartTotal + 40 < 1000) { %>
                                         <div class="form-check mb-3">
                                             <input class="form-check-input" type="radio" name="payment_method"
                                                 value="cod" id="cod" checked>
                                             <label class="form-check-label d-flex align-items-center" for="cod">
                                                 <i class="fas fa-money-bill-wave me-2"></i>
                                                 <span>Cash on Delivery</span>
-                                                <span class="badge bg-success ms-2">No additional charges</span>
                                             </label>
                                         </div>
+
                                         <div class="form-check mb-3">
                                             <input class="form-check-input" type="radio" value="razorpay"
                                                 name="payment_method" id="razorpay">
@@ -592,8 +593,17 @@
                                                 <i class="fas fa-mobile-alt me-2"></i>Razorpay
                                             </label>
                                         </div>
+                                <% } else { %>
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" checked type="radio" value="razorpay"
+                                                name="payment_method" id="razorpay">
+                                            <label class="form-check-label" for="razorpay">
+                                                <i class="fas fa-mobile-alt me-2"></i>Razorpay
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
+                                <% } %>
 
                                 <!-- Place Order Button -->
                                 <button id="placeOrderBtn" type="button" class="site-btn w-100 mt-4"
