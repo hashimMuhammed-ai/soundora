@@ -1,4 +1,6 @@
 const Coupon = require("../../models/couponModel");
+const { validationResult } = require('express-validator');
+
 
 const getCouponPage = async (req, res) => {
     try {
@@ -22,19 +24,12 @@ const addCoupon = async (req, res) => {
     try {
         const { couponCode, couponType, discount, minPurchase,maxDiscount, expiryDate, usageLimit } = req.body;
 
-        if (!couponCode || !couponType || !discount || !minPurchase || !expiryDate || !maxDiscount || !usageLimit) {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
             return res.status(400).json({
-                success: false,
-                message: "All fields are required!",
-                missingFields: {
-                    couponCode: !couponCode,
-                    couponType: !couponType,
-                    discount: !discount,
-                    minPurchase: !minPurchase,
-                    maxDiscount:!maxDiscount,
-                    expiryDate: !expiryDate,
-                    usageLimit: !usageLimit
-                }
+            success: false,
+            message: 'Validation failed',
+            errors: errors.array()
             });
         }
 

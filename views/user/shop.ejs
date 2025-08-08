@@ -776,8 +776,8 @@
                                     
                                 <!-- Apply Filter Button -->
                                 <div class="apply-filter">
-                                    <button id="applyFilter" class="btn" style="background-color: #0c0c0c; color: white;">
-                                        Apply Filter
+                                    <button  id="applyFilter clearFilter" class="btn " style="background-color: #0c0c0c; color: white;">
+                                        Clear Filter
                                     </button>
                                 </div>
                             </div>
@@ -914,6 +914,8 @@
     document.addEventListener('DOMContentLoaded', function() {
         const filterToggleBtn = document.getElementById('filterToggleBtn');
         const shopSidebar = document.getElementById('shopSidebar');
+    
+        
 
         const infoDiv = document.querySelector('.shop__product__option__left');
 

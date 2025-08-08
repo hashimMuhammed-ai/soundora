@@ -3,6 +3,7 @@ const session = require('express-session');
 const flash = require('connect-flash');
 require('dotenv').config();
 const passport = require('./config/passport');
+const setUserLocals = require('./middlewares/userLocals');
 const mongoose = require('mongoose');
 const Cart = require('./models/cartModel');
 const db = require('./config/db');
@@ -43,16 +44,7 @@ app.use(passport.session());
 // View Engine
 app.set('view engine','ejs');
 
-app.use(async (req, res, next) => {
-    res.locals.user = req.session.user || null
-    if(req.session.user){
-      res.locals.userName = req.session.userName || null;
-      const cart = await Cart.findOne({ userId: req.session.user });
-      res.locals.cartItemCount = cart ? cart.items.length : 0;
-    }
-     
-    next();
-});
+app.use(setUserLocals);
 
 
 

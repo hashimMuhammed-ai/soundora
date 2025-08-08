@@ -8,6 +8,7 @@ const productCtrl = require('../controllers/admin/productController');
 const orderCtrl = require('../controllers/admin/orderController');
 const couponCtrl = require('../controllers/admin/couponController');
 const {adminLoginAuth, adminAuth} = require('../middlewares/auth');
+const validateCoupon = require('../middlewares/validationRules');
 const multer = require('multer');
 const storage = require('../helpers/multer');
 const Product = require('../models/productModel');
@@ -63,7 +64,7 @@ router.post('/rejectReturn/:orderId', adminAuth, orderCtrl.rejectReturn)
 //Coupon Management
 
 router.get('/coupons', adminAuth, couponCtrl.getCouponPage)
-router.post('/addCoupon', adminAuth, couponCtrl.addCoupon)
+router.post('/addCoupon', adminAuth, validateCoupon, couponCtrl.addCoupon)
 router.patch('/toggle-coupon/:id', adminAuth, couponCtrl.toggleCoupon)
 
 

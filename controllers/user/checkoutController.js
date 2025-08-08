@@ -31,7 +31,6 @@ const loadCheckout = async (req, res) => {
 
         cart.cartTotal = cart.items.reduce((total, item) => total + item.totalPrice, 0);
         
-
         await cart.save();
 
         const addressDoc = await Address.findOne({ userId: userId });
@@ -45,7 +44,6 @@ const loadCheckout = async (req, res) => {
             limit: {$gt: 0},
             couponValidity: {$gte: date}
         }).sort({couponDiscount: -1})
-
         
         res.render("user/checkout", {
             cart,
@@ -369,7 +367,10 @@ const cancelOrder = async (req, res) => {
                 transactions: []
             })
         }
-        if(order.paymentMethod !== 'cod' && order.status === 'cancelled'){
+
+        const isRefundable = order.paymentMethod !== 'cod' && order.status === 'cancelled';
+
+        if(isRefundable){
             wallet.balance += order.totalAmount;
             wallet.transactions.push({
                 type: 'credit',

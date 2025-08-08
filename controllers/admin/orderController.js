@@ -101,6 +101,26 @@ const cancelOrder = async (req, res) => {
         order.status = 'cancelled';
         await order.save();
 
+        const userId = order.userId;
+
+        let wallet = await Wallet.findOne({userId});
+        if(!wallet){
+            wallet = new Wallet({
+                userId,
+                balance: 0,
+                transactions: []
+            })
+        }
+        wallet.balance += order.totalAmount;
+        wallet.transactions.push({
+            type: 'credit',
+            amount: order.totalAmount,
+            description: 'Product is cancelled by admin',
+            status: 'completed'
+        })
+
+        await wallet.save();
+
         res.status(200).json({ success: true, message: "Order cancelled successfully" });
 
     } catch (error) {
@@ -143,7 +163,6 @@ const approveReturn = async (req, res) => {
 
         await wallet.save();
         
-
         res.status(200).json({ success: true, message: "Return approved" })
     } catch (error) {
         console.log("error approving return", error)
