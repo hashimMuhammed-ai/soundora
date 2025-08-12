@@ -463,6 +463,158 @@ const getSalesReportPDF = async (req, res) => {
 };
 
 
+const getSalesReportExcel = async (req, res) => {
+    try {
+        const filterType = req.query.filterType || 'All';
+        const fromDate = req.query.fromDate;
+        const toDate = req.query.toDate;
+
+        const dateRange = getDateRange(filterType, fromDate, toDate);
+
+        const query = {
+            status: { $in: ["delivered", "Return rejected"] },
+            createdAt: { $gte: dateRange.start, $lte: dateRange.end }
+        };
+
+        const orders = await Order.find(query)
+            .populate('userId', 'name email phone')
+            .populate('items.productId', 'productName salePrice')
+            .sort({ createdAt: -1 });
+
+        const totalSales = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+        const totalOrders = orders.length;
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Sales Report');
+
+        worksheet.mergeCells('A1:F1');
+        worksheet.getCell('A1').value = 'Soundora';
+        worksheet.getCell('A1').font = { size: 16, bold: true };
+        worksheet.getCell('A1').alignment = { horizontal: 'center' };
+
+        worksheet.mergeCells('A2:F2');
+        worksheet.getCell('A2').value = `Sales Report - ${filterType}`;
+        worksheet.getCell('A2').font = { size: 12 };
+        worksheet.getCell('A2').alignment = { horizontal: 'center' };
+
+        let rowIndex = 3;
+        if (fromDate && toDate) {
+            worksheet.mergeCells(`A${rowIndex}:F${rowIndex}`);
+            worksheet.getCell(`A${rowIndex}`).value = `Date Range: ${new Date(fromDate).toLocaleDateString()} to ${new Date(toDate).toLocaleDateString()}`;
+            worksheet.getCell(`A${rowIndex}`).alignment = { horizontal: 'center' };
+            rowIndex++;
+        } else if (filterType !== 'All') {
+            let periodText = "";
+            switch (filterType) {
+                case 'Daily':
+                    periodText = "Today";
+                    break;
+                case 'Weekly':
+                    periodText = "This Week (From Sunday)";
+                    break;
+                case 'Monthly':
+                    periodText = "Current Month";
+                    break;
+                case 'Yearly':
+                    periodText = "Current Year";
+                    break;
+            }
+            
+            worksheet.mergeCells(`A${rowIndex}:F${rowIndex}`);
+            worksheet.getCell(`A${rowIndex}`).value = `Period: ${periodText}`;
+            worksheet.getCell(`A${rowIndex}`).alignment = { horizontal: 'center' };
+            rowIndex++;
+        }
+
+        worksheet.mergeCells(`A${rowIndex}:F${rowIndex}`);
+        worksheet.getCell(`A${rowIndex}`).value = `Generated on: ${new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        })}`;
+        worksheet.getCell(`A${rowIndex}`).alignment = { horizontal: 'center' };
+        rowIndex += 2;
+
+        worksheet.mergeCells(`A${rowIndex}:F${rowIndex}`);
+        worksheet.getCell(`A${rowIndex}`).value = 'Summary';
+        worksheet.getCell(`A${rowIndex}`).font = { bold: true };
+        rowIndex++;
+
+        worksheet.mergeCells(`A${rowIndex}:C${rowIndex}`);
+        worksheet.getCell(`A${rowIndex}`).value = `Total Orders: ${totalOrders}`;
+        rowIndex++;
+
+        worksheet.mergeCells(`A${rowIndex}:C${rowIndex}`);
+        worksheet.getCell(`A${rowIndex}`).value = `Total Sales: RS.${totalSales.toLocaleString()}.00`;
+        rowIndex += 2;
+
+        const headers = ['Order ID', 'Date', 'Customer Name', 'Product', 'Status', 'Amount'];
+        const headerRow = worksheet.addRow(headers);
+        headerRow.eachCell((cell) => {
+            cell.font = { bold: true };
+            cell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'f0f0f0' }
+            };
+            cell.border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            };
+        });
+
+        orders.forEach((order, index) => {
+            const row = worksheet.addRow([
+                `#${order._id.toString().slice(-20)}`,
+                new Date(order.createdAt).toLocaleDateString(),
+                order.userId.name,
+                order.items[0].productId.productName,
+                order.status,
+                `RS.${(order.finalAmount || order.totalAmount).toFixed(2)}`
+            ]);
+
+            if (index % 2 === 0) {
+                row.eachCell((cell) => {
+                    cell.fill = {
+                        type: 'pattern',
+                        pattern: 'solid',
+                        fgColor: { argb: 'f9f9f9' }
+                    };
+                });
+            }
+
+            // Add borders to all cells
+            row.eachCell((cell) => {
+                cell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                };
+            });
+        });
+
+        worksheet.columns.forEach(column => {
+            column.width = 20;
+        });
+
+        const fileName = 'Soundora_sales_report.xlsx';
+        
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+
+        await workbook.xlsx.write(res);
+        res.end();
+
+    } catch (error) {
+        console.log("Error generating Excel report", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+
 module.exports = {
     getOrdersPage,
     updateOrder,
@@ -470,5 +622,6 @@ module.exports = {
     approveReturn,
     rejectReturn,
     getSalesReport,
-    getSalesReportPDF
+    getSalesReportPDF,
+    getSalesReportExcel
 };

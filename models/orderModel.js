@@ -71,7 +71,7 @@ const orderSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['cod', 'razorpay'],
+    enum: ['cod', 'razorpay', 'wallet'],
     required: true
   },
   totalAmount: {
@@ -86,7 +86,7 @@ const orderSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'Return requested', 'Return rejected', 'failed'],
+    enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'Return requested', 'Return rejected', 'Return approved', 'failed'],
     default: 'pending'
   },
   cancellationReason: {

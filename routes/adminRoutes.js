@@ -71,6 +71,7 @@ router.patch('/toggle-coupon/:id', adminAuth, couponCtrl.toggleCoupon)
 // Sales Report
 router.get('/salesReport', adminAuth, orderCtrl.getSalesReport)
 router.get('/salesReportPDF/pdf', adminAuth, orderCtrl.getSalesReportPDF)
+router.get('/salesReportExcel/excel', adminAuth, orderCtrl.getSalesReportExcel);
 
 
 module.exports = router;

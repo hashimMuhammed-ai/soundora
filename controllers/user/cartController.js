@@ -8,12 +8,12 @@ const loadCart = async (req, res) => {
         const userId = req.session.user;
 
         let cart = await Cart.findOne({ userId }).populate({
-            path: "items.productId", 
+            path: "items.productId",
             populate: { path: "category" }
         });
 
         if (!cart) {
-            return res.render("user/cart", { 
+            return res.render("user/cart", {
                 user: req.session.userData,
                 cart: {
                     items: [],
@@ -23,25 +23,27 @@ const loadCart = async (req, res) => {
             });
         }
 
-        const processedData = cart.items
-            .map(item => {
-                if (!item.productId) return null;
-                
-                const productAvailable = item.productId.isListed && item.productId.quantity > 0;
-                const categoryAvailable = item.productId.category && item.productId.category.isListed;
-                
-                item.productId.isAvailable = productAvailable && categoryAvailable;
-                
-                return { ...item._doc, productId: item.productId };
-            })
-            .filter(item => item);
+        const processedData = cart.items.filter(item =>
+            item.productId?.isListed &&
+            item.productId?.quantity > 0 &&
+            item.productId?.category?.isListed
+        );
 
         cart.items = processedData;
-        cart.cartTotal = cart.items.reduce((total, item) => 
-            (item.productId.isAvailable ? item.totalPrice : 0) + total, 0);
+
+        cart.items.forEach(item => {
+            item.totalPrice = item.productId.salePrice * item.quantity;
+        });
+
+        cart.cartTotal = cart.items.reduce(
+            (total, item) => item.totalPrice + total,
+            0
+        );
+
+        await cart.save();
 
         res.render("user/cart", {
-            user: req.session.userData, 
+            user: req.session.userData,
             cart,
             itemsCount: cart.items.length
         });
@@ -51,6 +53,7 @@ const loadCart = async (req, res) => {
         res.status(500).send("Failed to load cart");
     }
 };
+
 
 const addToCart = async (req, res) => {
     try {

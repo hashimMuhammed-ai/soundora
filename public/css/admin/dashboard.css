@@ -477,7 +477,7 @@ body {
 
 /* Container for proper alignment */
 .chart-filter-container {
-   display: flex;
+    display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
@@ -486,26 +486,25 @@ body {
     background: linear-gradient(135deg, #dfdfdf, #bac8e0);
     border: 1px solid #aaa;
     border-radius: 8px;
-    max-width: 318px;
+    max-width: 500px;
     margin: 0 auto;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    height: 99px;
-    width: 228px;
+    width: 100%;
     margin-right: 33px;
+    height: auto; /* Allow container to grow with content */
+    overflow: visible; /* Ensure no content is clipped */
 }
 
-/* Label styling */
 .chart-label {
-   font-size: 18px;
-   font-weight: bold;
-   color: #403e3e;
-   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    font-size: 18px;
+    font-weight: bold;
+    color: #403e3e;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-/* Dropdown Select */
 .chart-select {
-   width: 72%;
-    padding: 10px 30px;
+    width: 40%;
+    padding: 10px 20px;
     border: 2px solid #fff;
     border-radius: 8px;
     font-size: 16px;
@@ -513,27 +512,24 @@ body {
     background: rgba(255, 255, 255, 0.9);
     color: #333;
     cursor: pointer;
-    transition: all 0.3sease;
+    transition: all 0.3s ease;
     outline: none;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="black" d="M2 0L0 2h4z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-/* Hover & Focus Effects */
 .chart-select:hover,
 .chart-select:focus {
-   border-color: #ff6f61;
-   background: #fff;
-   box-shadow: 0 0 10px rgba(255, 111, 97, 0.5);
-}
-
-/* Dropdown Arrow Customization */
-.chart-select {
-   appearance: none;
-   background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="black" d="M2 0L0 2h4z"/></svg>');
-   background-repeat: no-repeat;
-   background-position: right 10px center;
-   background-size: 12px;
+    border-color: #ff6f61;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(255, 111, 97, 0.5);
 }
 
 /* Mobile Optimization */

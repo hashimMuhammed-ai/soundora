@@ -12,12 +12,58 @@
             /* text-transform: uppercase; */
             background: linear-gradient(45deg, #251a1a, #fc913a);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             letter-spacing: 3px;
             text-shadow: 3px 3px 10px rgba(191, 190, 190, 0.4);
             animation: glowText 1.5s infinite alternate ease-in-out;    
         }
 
+
+#customRangePicker {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%; /* Match container width for better alignment */
+    margin-top: 10px;
+    flex-wrap: wrap; /* Allow wrapping for smaller screens */
+    justify-content: center; /* Center elements */
+}
+
+.date-label {
+    font-weight: bold;
+    margin: 0 5px;
+}
+
+.chart-date-input {
+    padding: 10px;
+    border: 2px solid #fff;
+    border-radius: 8px;
+    font-size: 16px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.apply-filter-button {
+    padding: 10px 20px;
+    border: 2px solid #fff;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.apply-filter-button:hover,
+.apply-filter-button:focus {
+    border-color: #ff6f61;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(255, 111, 97, 0.5);
+}
         @keyframes glowText {
             from {
                 text-shadow: 3px 3px 10px rgba(191, 190, 190, 0.4);
@@ -82,14 +128,23 @@
             </a>
         </div>
 
-        <div class="chart-filter-container">
-            <label for="salesChartFilter" class="chart-label">Select Time Filter:</label>
-            <select id="salesChartFilter" class="chart-select">
-                <option value="yearly">Yearly</option>
-                <option value="monthly">Monthly</option>
-                <option value="weekly" selected>Weekly</option>
-            </select>
-        </div>
+         <div class="chart-filter-container">
+    <label for="salesChartFilter" class="chart-label">Select Time Filter:</label>
+    <select id="salesChartFilter" class="chart-select" onchange="updateDashboard()">
+        <option value="yearly">Yearly</option>
+        <option value="monthly">Monthly</option>
+        <option value="weekly" selected>Weekly</option>
+        <option value="daily">Daily</option>
+        <option value="custom-range">Custom Range</option>
+    </select>
+    <div id="customRangePicker" style="display: none;">
+        <label for="startDate" class="date-label">From:</label>
+        <input type="date" id="startDate" class="chart-date-input">
+        <label for="endDate" class="date-label">To:</label>
+        <input type="date" id="endDate" class="chart-date-input">
+        <button id="applyFilter" class="apply-filter-button" onclick="updateDashboard()">Apply Filter</button>
+    </div>
+</div>
         
     
         <!-- Charts Section -->
@@ -287,10 +342,13 @@
     </main>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <script>
-        // Pass dashboard data to client-side JavaScript
-        window.dashboardData = <%-JSON.stringify(dashboardData) %>;
-        
-    </script>
+<script type="application/json" id="dashboard-data">
+    <%-JSON.stringify(dashboardData) %>
+</script>
+<script>
+    window.dashboardData = JSON.parse(document.getElementById('dashboard-data').textContent);
+
+
+</script>
     
     <%- include("../../views/partials/admin/footer") %>

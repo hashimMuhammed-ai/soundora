@@ -450,6 +450,46 @@
         background-color: #333;
     }
 
+    #clearFilter {
+    background-color: #0c0c0c;
+    color: white;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 4px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    width: auto; /* Changed from 100% to auto to fit content */
+    min-width: 120px;
+    text-align: center;
+    cursor: pointer;
+}
+
+/* Hover effect */
+#clearFilter:hover {
+    background-color: #333333; /* Slightly lighter shade for hover */
+    transform: translateY(-2px); /* Subtle lift effect */
+}
+
+/* Focus and active states for accessibility */
+#clearFilter:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2); /* Subtle focus ring */
+}
+
+#clearFilter:active {
+    transform: translateY(0); /* Reset lift on click */
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    #clearFilter {
+        font-size: 12px; /* Smaller font on mobile */
+        padding: 6px 12px; /* Adjust padding for smaller screens */
+    }
+}
+
     /* Toast animations */
     @keyframes fadeInUp {
         from {
@@ -639,6 +679,12 @@
                         <button type="submit"><i class="fa fa-search"></i></button>
                     </form>
                 </div>
+                <!-- Clear Filter Button -->
+            <div class="col-lg-3 col-md-6 col-sm-6 apply-filter">
+                <button id="clearFilter" class="btn" style="background-color: #0c0c0c; color: white;">
+                    Clear Filter
+                </button>
+            </div>
                 <div class="col-12">
                     
                     <button class="filter-toggle-btn" id="filterToggleBtn">
@@ -774,12 +820,7 @@
                                     </div>
                                 </div>
                                     
-                                <!-- Apply Filter Button -->
-                                <div class="apply-filter">
-                                    <button  id="applyFilter clearFilter" class="btn " style="background-color: #0c0c0c; color: white;">
-                                        Clear Filter
-                                    </button>
-                                </div>
+                              
                             </div>
                         </div>
                     </div>
@@ -1257,6 +1298,29 @@ async function addToWishlist(productId) {
             avatar: "https://cdn-icons-png.flaticon.com/512/190/190406.png",
         }).showToast();
     }
+}
+
+
+document.getElementById('clearFilter').addEventListener('click', clearFilter);
+
+function clearFilter() {
+    // Reset category checkboxes
+    document.querySelectorAll('.filter-category').forEach(cb => cb.checked = false);
+    
+    // Reset brand checkboxes
+    document.querySelectorAll('.filter-brand').forEach(cb => cb.checked = false);
+    
+    // Reset price range checkboxes
+    document.querySelectorAll('.filter-price').forEach(cb => cb.checked = false);
+    
+    // Reset sort option to default
+    document.getElementById('priceFilter').value = 'price-low-high';
+    
+    // Reset search input
+    document.getElementById('searchInput').value = '';
+    
+    // Apply filter with reset values (fetch all products)
+    applyFilter();
 }
 
     </script>

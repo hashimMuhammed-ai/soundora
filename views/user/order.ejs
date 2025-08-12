@@ -534,7 +534,7 @@
         </div>
 
         <!-- Ordered Items Section -->
-        <div class="card">
+<div class="card">
             <h2 class="section-title">Ordered Items</h2>
             <table class="products-table">
                 <thead>
@@ -544,6 +544,10 @@
                         <th>Price</th>
                         <th>Quantity</th>
                         <th>Total</th>
+                       
+                        <% if (order.orderStatus !== 'cancelled' && order.orderStatus !== 'delivered' && order.orderStatus !== 'Return requested' && order.orderStatus !== 'Return approved') { %>
+                            <th>Actions</th>
+                        <% } %>
                     </tr>
                 </thead>
                 <tbody>
@@ -560,16 +564,24 @@
                                     <td>₹<%= item.price || 0 %></td>
                                     <td><%= item.quantity || 1 %></td>
                                     <td>₹<%= (item.price || 0) * (item.quantity || 1) %></td>
+                                    <% if (order.orderStatus !== 'cancelled' && order.orderStatus !== 'delivered' && order.orderStatus !== 'returned' &&  order.orderStatus !== 'failed' && order.orderStatus !== 'Return approved' && order.orderStatus !== 'Return requested' && order.orderStatus !== 'Return rejected') { %>
+                                    <td>                                       
+                                        <button class="btn-cancel" style="margin-top: -5px" onclick="openModal('<%= item._id %>')">
+                                            <i class="fas fa-times-circle"></i> Cancel
+                                        </button>   
+                                    </td>
+                                    <% } %>
                                 </tr>
                             <% } %>
                         <% }); %>
                         <tr class="total-row">
-                            <td colspan="4" style="text-align: right;">Total Amount:</td>
+                            <td colspan="<%= order.orderStatus !== 'cancelled' && order.orderStatus !== 'delivered' && order.orderStatus !== 'Return requested' && order.orderStatus !== 'Return approved' ? 5 : 4 %>" style="text-align: right;">Total Amount:</td>
                             <td>₹<%= order.totalAmount || order.total || 0 %></td>
                         </tr>
+
                     <% } else { %>
                         <tr>
-                            <td colspan="5" class="text-center">No items found in this order.</td>
+                            <td colspan="6" class="text-center">No items found in this order.</td>
                         </tr>
                     <% } %>
                 </tbody>
@@ -613,7 +625,7 @@
             <p>Are you sure you want to cancel this order? This action cannot be undone.</p>
             <div class="form-group">
                 <label for="cancelReason">Reason for cancellation:</label>
-                <select id="cancelReason">
+                <select id="cancelReason" onchange="cancelReason()">
                     <option value="">Select a reason</option>
                     <option value="changed_mind">Changed my mind</option>
                     <option value="wrong_item">Ordered wrong item</option>
@@ -622,13 +634,19 @@
                     <option value="other">Other</option>
                 </select>
             </div>
+
+            <!-- Hidden input for "Other" reason -->
+            <div id="otherReasonWrapper" style="display: none; margin-top: 10px;">
+                <input type="text" style="padding: 7px; margin-top: -7px; margin-left: 7px;" id="otherReason" placeholder="Enter your reason" />
+            </div>
         </div>
         <div class="modal-footer">
             <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
-            <button type="button" class="btn-confirm" onclick="confirmCancel()">Confirm</button>
+            <button type="button" style="margin-bottom: -11px;" class="btn-confirm" onclick="confirmCancel()">Confirm</button>
         </div>
     </div>
 </div>
+
 
 <div id="returnModal" class="modal">
     <div class="modal-content">
@@ -656,6 +674,19 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+
+
+ function cancelReason () {
+    const cancelReasonSelect = document.getElementById('cancelReason');
+    const otherWrapper = document.getElementById('otherReasonWrapper');
+
+     otherWrapper.style.display = (cancelReasonSelect.value === 'other') ? 'block' : 'none';
+        
+    
+};
+
+
+
 
 function openReturnModal(orderId) {
         document.getElementById("orderId").value = orderId;
@@ -687,81 +718,105 @@ function openReturnModal(orderId) {
         }
     });
 
-    function openModal(event) {
-        if (event) {
-            event.preventDefault();
-        }
-        const modal = document.getElementById("cancelOrderModal");
-        if (modal) {
-            modal.style.display = "flex";
-            document.body.style.overflow = 'hidden';
-        }
+
+  let currentItemId = null;
+
+function openModal(itemId = null) {
+    currentItemId = itemId;
+    const modal = document.getElementById('cancelOrderModal');
+    const title = modal.querySelector('.modal-header h2');
+    const bodyP = modal.querySelector('.modal-body p');
+    if (itemId) {
+        title.textContent = 'Cancel Item';
+        bodyP.textContent = 'Are you sure you want to cancel this item? This action cannot be undone.';
+    } else {
+        title.textContent = 'Cancel Order';
+        bodyP.textContent = 'Are you sure you want to cancel this order? This action cannot be undone.';
+    }
+    
+    modal.style.display = 'block';
+
+}
+
+function closeModal() {
+    document.getElementById('cancelOrderModal').style.display = 'none';
+    currentItemId = null;
+}
+
+async function confirmCancel() {
+    let reason = document.getElementById('cancelReason').value;
+
+    if (!reason) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Please select a reason'
+        });
+        return;
     }
 
-    function closeModal() {
-        document.getElementById('cancelOrderModal').style.display = 'none';
-    }
-
-    // Close modal when clicking outside
-    window.onclick = function(event) {
-        const modal = document.getElementById('cancelOrderModal');
-        if (event.target === modal) {
-            closeModal();
-        }
-    }
-
-    async function confirmCancel() {
-        const reason = document.getElementById('cancelReason').value;
-        if (!reason) {
+    if (reason === 'other') {
+        const otherReason = document.getElementById('otherReason').value.trim();
+        if (!otherReason) {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'Please select a reason'
+                text: 'Please specify your reason'
             });
             return;
         }
-        try {
-            const orderId = '<%= order._id %>'
-            const response = await fetch (`/cancelOrder/${orderId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({reason})
-            });
-            const data = await response.json();
+        reason = otherReason; 
+    }
 
-            if(data.success){
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: 'Order cancelled successfully',
-                    showConfirmButton: false,
-                    timer: 1500
-                })
-                window.location.replace('/viewOrder/'+orderId);
-            }else{
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Failed to cancel order',
-                    showConfirmButton: false,
-                    timer: 1500
-                })
-            }
-        } catch (error) {
+    try {
+        const orderId = '<%= order._id %>';
+        const body = { reason };
+        
+        if (currentItemId) {
+            body.itemId = currentItemId;
+        }
+
+        const response = await fetch(`/cancelOrder/${orderId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            await Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: data.message,
+                showConfirmButton: false,
+                timer: 1500
+            });
+            window.location.replace('/viewOrder/' + orderId);
+        } else {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'Failed to cancel order',
+                text: data.message,
                 showConfirmButton: false,
                 timer: 1500
-            })
+            });
         }
-        closeModal();
-        // location.reload();
-        
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to cancel order',
+            showConfirmButton: false,
+            timer: 1500
+        });
     }
+
+    closeModal();
+}
+
 
     async function retryPayment(orderId) {
         try {

@@ -16,7 +16,7 @@ const uploads = multer({storage: storage});
 
 
 
-router.get('/pageNotFound', userCtrl.pageNotFound);
+router.get('/pageNotFound', userAuth, userCtrl.pageNotFound);
 router.get('/', userAuth, userCtrl.loadHompage);
 router.get('/signup', userLoginAuth, userCtrl.getSignup);
 router.post('/signup', userLoginAuth, userCtrl.postSignup);
