@@ -9,6 +9,7 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 
+
 const loadCheckout = async (req, res) => {
     try {
         const userId = req.session.user;
@@ -311,9 +312,6 @@ const placeOrder = async (req, res) => {
     }
 };
 
-
-
-
 const viewOrder = async (req, res) => {
     try {
         const userId = req.session.user;
@@ -334,6 +332,7 @@ const viewOrder = async (req, res) => {
             console.log("Order does not belong to current user");
             return res.redirect('/userProfile');
         }
+
 
         const user = await User.findById(userId).select('name email phone');
 

@@ -12,6 +12,8 @@ const fs = require('fs');
 const path = require('path');
 
 
+
+
 const getOrdersPage = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1
@@ -24,6 +26,7 @@ const getOrdersPage = async (req, res) => {
             .populate('userId', 'name email phone')
             .populate('items.productId', 'productName productImages salePrice ')
             .sort({ createdAt: -1 }).skip(skip).limit(limit)
+       
 
         const returnRequests = orders.filter(order => order.status === 'Return requested');
 
@@ -481,6 +484,8 @@ const getSalesReportExcel = async (req, res) => {
             .populate('items.productId', 'productName salePrice')
             .sort({ createdAt: -1 });
 
+        console.log(orders);
+
         const totalSales = orders.reduce((sum, order) => sum + order.totalAmount, 0);
         const totalOrders = orders.length;
 
@@ -567,7 +572,7 @@ const getSalesReportExcel = async (req, res) => {
 
         orders.forEach((order, index) => {
             const row = worksheet.addRow([
-                `#${order._id.toString().slice(-20)}`,
+                `#${order.orderId.toString()}`,
                 new Date(order.createdAt).toLocaleDateString(),
                 order.userId.name,
                 order.items[0].productId.productName,

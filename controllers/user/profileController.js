@@ -195,8 +195,6 @@ const getUserProfile = async (req, res) => {
             .skip(skip)
             .limit(limit);
 
-        console.log(orders);
-
         const totalPages = Math.ceil(totalOrders / limit);
         const baseUrl = process.env.BASE_URL || 'http://localhost:3004';
 
