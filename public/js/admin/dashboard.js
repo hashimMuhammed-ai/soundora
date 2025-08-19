@@ -56,6 +56,61 @@ document.addEventListener('DOMContentLoaded', function() {
             updateDashboard('custom-range', startDate, endDate);
         });
     }
+
+    // Enforce date constraints for custom range
+    // To date: max today; To date: min = From date
+    const todayObj = new Date();
+    const yyyy = todayObj.getFullYear();
+    const mm = String(todayObj.getMonth() + 1).padStart(2, '0');
+    const dd = String(todayObj.getDate()).padStart(2, '0');
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+
+    if (endDateInput) {
+        endDateInput.setAttribute('max', todayStr);
+    }
+
+    if (startDateInput) {
+        startDateInput.setAttribute('max', todayStr);
+    }
+
+    if (startDateInput && endDateInput) {
+        // Initialize min if From already has a value
+        if (startDateInput.value) {
+            endDateInput.setAttribute('min', startDateInput.value);
+            if (endDateInput.value && endDateInput.value < startDateInput.value) {
+                endDateInput.value = startDateInput.value;
+            }
+        }
+
+        // Keep constraints synced on From change
+        startDateInput.addEventListener('change', function() {
+            if (startDateInput.value > todayStr) {
+                startDateInput.value = todayStr;
+            }
+            startDateInput.max = todayStr;
+
+            const from = startDateInput.value;
+            if (from) {
+                endDateInput.min = from;
+                if (endDateInput.value && endDateInput.value < from) {
+                    endDateInput.value = from;
+                }
+            } else {
+                endDateInput.removeAttribute('min');
+            }
+            endDateInput.max = todayStr;
+        });
+
+        // Guard against manual future or pre-From selection in To
+        endDateInput.addEventListener('change', function() {
+            if (endDateInput.value > todayStr) {
+                endDateInput.value = todayStr;
+            }
+            if (startDateInput.value && endDateInput.value < startDateInput.value) {
+                endDateInput.value = startDateInput.value;
+            }
+        });
+    }
 });
 
 function updateDashboard(timeFilter, startDate = null, endDate = null) {

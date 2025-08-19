@@ -678,7 +678,8 @@
                     <input type="text" id="edit_pincode" name="pincode" placeholder="Pincode" required>
 
                     <label for="phone">Phone Number</label>
-                    <input type="tel" id="edit_phone" name="phone" placeholder="Phone Number" required>
+                    <input type="tel" style="max-width: 430px;" id="edit_phone" name="phone" placeholder="Phone Number" required>
+                    <input type="hidden" id="edit_fullPhone" name="fullPhone">
 
                     <label for="altPhone">Alternative Phone Number (Optional)</label>
                     <input type="tel" id="edit_altPhone" name="altPhone"
@@ -775,6 +776,7 @@
                     document.getElementById("edit_landMark").value = address.landMark || '';
                     document.getElementById("edit_pincode").value = address.pincode || '';
                     document.getElementById("edit_phone").value = address.phone || '';
+                    if (typeof itiEdit !== 'undefined' && itiEdit) { try { itiEdit.setNumber(address.phone || ''); } catch (e) {} }
                     document.getElementById("edit_altPhone").value = address.altPhone || '';
                     document.getElementById("edit_address_id").value = address._id;
                     document.getElementById("editAddressModal").style.display = "flex";
@@ -792,6 +794,19 @@
                 formatOnDisplay: true,
                 utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js", // For formatting/validation
             });
+
+            const editPhoneInputField = document.querySelector("#edit_phone");
+            const editFullPhoneField = document.querySelector("#edit_fullPhone");
+            let itiEdit;
+            if (editPhoneInputField) {
+                itiEdit = window.intlTelInput(editPhoneInputField, {
+                    initialCountry: "in",
+                    preferredCountries: ["in", "us", "gb"],
+                    separateDialCode: true,
+                    formatOnDisplay: true,
+                    utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js",
+                });
+            }
 
             function openAddAddressModal(event) {
                 if (event) event.preventDefault();
@@ -829,6 +844,38 @@
                         icon: 'error',
                         title: 'Validation Errors',
                         html: errors.join('<br>'), 
+                        confirmButtonColor: '#d33'
+                    });
+                }
+            });
+
+            // Edit Address form validation mirroring Add Address
+            document.querySelector('#editAddressModal form').addEventListener('submit', function (e) {
+                const addressType = this.addressType.value.trim();
+                const name = this.name.value.trim();
+                const city = this.city.value.trim();
+                const state = this.state.value.trim();
+                const landMark = this.landMark.value.trim();
+                const pincode = this.pincode.value.trim();
+                const altPhone = this.altPhone.value.trim();
+
+                let errors = [];
+
+                if (!addressType) errors.push("Address type is required");
+                if (!name) errors.push("Name is required");
+                if (!city) errors.push("City is required");
+                if (!state) errors.push("State is required");
+                if (!landMark) errors.push("Landmark is required");
+                if (!/^\d{6}$/.test(pincode)) errors.push("Pincode must be 6 digits");
+                if (!itiEdit || !itiEdit.isValidNumber()) { errors.push('Please enter valid phone number'); } else { editFullPhoneField.value = itiEdit.getNumber(); }
+                if (altPhone && !/^\d{10}$/.test(altPhone)) errors.push("Alternative phone must be 10 digits");
+
+                if (errors.length > 0) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validation Errors',
+                        html: errors.join('<br>'),
                         confirmButtonColor: '#d33'
                     });
                 }
