@@ -1129,7 +1129,7 @@ function renderProducts(products) {
                 <div class="product-card">
                     <div class="product-card__image">
                         <a href="/productDetails?id=${product._id}">
-                            <img src="${product.productImages && product.productImages.length > 0 ? '/Uploads/product-images/' + product.productImages[0] : '/path/to/default-image.jpg'}" 
+                            <img src="${product.productImages && product.productImages.length > 0 ? '/uploads/product-images/' + product.productImages[0] : '/path/to/default-image.jpg'}" 
                                 alt="${product.productName || 'Product'}" 
                                 class="img-fluid">
                         </a>

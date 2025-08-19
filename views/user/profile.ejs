@@ -1195,7 +1195,7 @@
           nameElement.textContent = data.user.name;
           phoneElement.innerHTML = `<strong>Phone:</strong> ${data.user.phone}`;
           if (data.user.profileImage) {
-            profileImgElement.src = `/Uploads/profile-images/${data.user.profileImage}?t=${new Date().getTime()}`;
+            profileImgElement.src = `/uploads/profile-images/${data.user.profileImage}?t=${new Date().getTime()}`;
           }
         });
       } else {
