@@ -12,7 +12,7 @@ const productDetails = async (req, res) => {
         const productId = req.query.id;
 
         const product = await Product.findById(productId)
-            .populate("category","name description categoryOffer isListed ", { isListed: true }) 
+            .populate("category","name description categoryOffer isListed ") 
             .populate("brand", "brandName"); 
 
 

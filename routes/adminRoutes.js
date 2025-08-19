@@ -6,7 +6,9 @@ const categoryCtrl = require('../controllers/admin/categoryController');
 const brandCtrl = require('../controllers/admin/brandController');
 const productCtrl = require('../controllers/admin/productController');
 const orderCtrl = require('../controllers/admin/orderController');
+const couponCtrl = require('../controllers/admin/couponController');
 const {adminLoginAuth, adminAuth} = require('../middlewares/auth');
+const validateCoupon = require('../middlewares/validationRules');
 const multer = require('multer');
 const storage = require('../helpers/multer');
 const Product = require('../models/productModel');
@@ -16,6 +18,7 @@ router.get('/pageError', adminAuth, adminCtrl.pageError);
 router.get('/login', adminLoginAuth, adminCtrl.getLogin);
 router.post('/login', adminLoginAuth, adminCtrl.postLogin);
 router.get('/dashboard', adminAuth, adminCtrl.getDashboard);
+router.get('/dashboard-data', adminCtrl.getDashboardDataAPI);
 router.get('/logout', adminAuth, adminCtrl.logout);
 router.get('/customers', adminAuth, customerCtrl.customerInfo);
 router.post('/toggleBlock', adminAuth, customerCtrl.toggleBlock);
@@ -56,6 +59,19 @@ router.post('/updateOrder', adminAuth, orderCtrl.updateOrder)
 router.post('/cancelOrder', adminAuth, orderCtrl.cancelOrder)
 router.post('/approveReturn', adminAuth, orderCtrl.approveReturn)
 router.post('/rejectReturn/:orderId', adminAuth, orderCtrl.rejectReturn)
+
+
+//Coupon Management
+
+router.get('/coupons', adminAuth, couponCtrl.getCouponPage)
+router.post('/addCoupon', adminAuth, validateCoupon, couponCtrl.addCoupon)
+router.patch('/toggle-coupon/:id', adminAuth, couponCtrl.toggleCoupon)
+
+
+// Sales Report
+router.get('/salesReport', adminAuth, orderCtrl.getSalesReport)
+router.get('/salesReportPDF/pdf', adminAuth, orderCtrl.getSalesReportPDF)
+router.get('/salesReportExcel/excel', adminAuth, orderCtrl.getSalesReportExcel);
 
 
 module.exports = router;

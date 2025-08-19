@@ -7,6 +7,7 @@ const Address = require('../../models/addressModel');
 const Order = require('../../models/orderModel');
 const multer = require('multer');
 const storage = require('../../helpers/multer');
+const Wallet = require('../../models/walletModel');
 
 
 
@@ -179,6 +180,9 @@ const getUserProfile = async (req, res) => {
     try {
         const userId = req.session.user;
         const user = await User.findById(userId);
+
+        const walletData = await Wallet.findOne({ userId: userId }) || { transactions: [], balance: 0 };
+        walletData.transactions = walletData.transactions.sort((a, b) => b.createdAt - a.createdAt);
         
         const page = parseInt(req.query.page) || 1;
         const limit = 4;
@@ -192,8 +196,9 @@ const getUserProfile = async (req, res) => {
             .limit(limit);
 
         const totalPages = Math.ceil(totalOrders / limit);
+        const baseUrl = process.env.BASE_URL || 'http://localhost:3004';
 
-        res.render('user/profile', { user, orders, totalPages, currentPage: page, wallet: { transactions: [] } })
+        res.render('user/profile', { user, orders, totalPages, currentPage: page, wallet: walletData, baseUrl })
     } catch (error) {
         console.log(error)
     }

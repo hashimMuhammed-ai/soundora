@@ -1,3 +1,4 @@
+
 const Product = require('../../models/productModel');
 const Category = require('../../models/categoryModel');
 const Brand = require('../../models/brandModel');
@@ -189,19 +190,32 @@ const getAllProducts = async (req, res) => {
 
 const addProductOffer = async (req, res) => {
    try {
-       const { productId, offerPercentage,endDate } = req.body;
-       
-       const product = await Product.findByIdAndUpdate(productId, {
-           productOffer: offerPercentage,
-         //   offerStartDate: startDate,
-           offerEndDate: endDate
-       }, { new: true });
+       const { productId, offerPercentage, endDate } = req.body;
 
-       if (!product) {
-           return res.status(404).json({ success: false, message: 'Product not found' });
-       }
+      const product = await Product.findById(productId);
+      if(!product){
+         return res.status(404).json({success: false, message: 'Product not found'})
+      }
+      if (offerPercentage < 0 || offerPercentage > 100) {
+         return res.status(400).json({ success: false, message: 'Invalid offer percentage' });
+      }
 
-       res.json({ success: true, product });
+      product.productOffer = offerPercentage || 0
+      product.offerEndDate = endDate;
+         
+      const category = await Category.findById(product.category);
+
+      const productOffer = product.productOffer || 0;
+      const categoryOffer = category?.categoryOffer || 0;
+      
+      const maxOffer = Math.max(productOffer, categoryOffer);
+      product.appliedOffer = maxOffer;
+      const discountedPrice = product.regularPrice - (product.regularPrice * maxOffer / 100);
+      product.salePrice = Math.round(discountedPrice);
+
+      await product.save();
+
+      res.json({ success: true, product });
    } catch (error) {
        console.error('Error adding product offer:', error);
        res.status(500).json({ success: false, message: 'Failed to add offer' });
@@ -212,16 +226,21 @@ const addProductOffer = async (req, res) => {
 const deleteProductOffer = async (req, res) => {
    try {
        const { productId } = req.body;
-       
-       const product = await Product.findByIdAndUpdate(productId, {
-           productOffer: 0,
-         //   offerStartDate: null,
-           offerEndDate: null
-       }, { new: true });
 
+       const product = await Product.findById(productId);
        if (!product) {
            return res.status(404).json({ success: false, message: 'Product not found' });
        }
+       product.productOffer = 0;
+       product.offerEndDate = null;
+
+       const category = await Category.findById(product.category);
+       const categoryOffer = category?.categoryOffer || 0;
+       const discountedPrice = product.regularPrice - (product.regularPrice * categoryOffer / 100);
+       product.salePrice = Math.round(discountedPrice);
+       product.appliedOffer = categoryOffer;
+
+       await product.save();
 
        res.json({ success: true, product });
    } catch (error) {
@@ -271,7 +290,7 @@ const getEditProduct = async (req, res) => {
           return res.redirect('/admin/products');
       }
 
-      const product = await Product.findById(id).populate('category').populate('brand');
+      const product = await Product.findById(id)
       if (!product) {
           return res.redirect('/admin/products');
       }

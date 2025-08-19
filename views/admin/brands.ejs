@@ -239,7 +239,8 @@
             required
           />
         </div>
-        <div class="form-group">
+        
+        <div class="form-group" style="margin-top: 10px; margin-bottom: -10px;">
           <label for="brandImage" class="form-label">Brand Logo</label>
           <input 
             class="form-control" 
@@ -249,6 +250,9 @@
             accept="image/*"
             required
           />
+          <div id="imagePreview" style="margin-top: 10px; max-width: 200px;">
+            <img id="previewImg" style="max-width: 100%; display: none;" alt="Image Preview" />
+          </div>
         </div>
         <button class="btn-add-brand" type="submit">
           Add Brand
@@ -275,7 +279,7 @@
               <td>
                 <div class="brand-logo">
                   <img
-                    src="/uploads/brands/<%=brand.brandImage%>"
+                    src="/Uploads/brands/<%=brand.brandImage%>"
                     alt="<%=brand.brandName%>"
                   />
                 </div>
@@ -291,7 +295,7 @@
                 <% if(!brand.isBlocked) { %>
                   <a href="#" onclick="blockBrand('<%=brand._id%>', this)" class="btn-action btn-danger">Block</a>
                 <% } else { %>
-                  <a href="#" onclick="unblockBrand('<%=brand._id%>', this)" class="btn-action btn-success">Unblock</a>
+                  <a href="#" onclick="blockBrand('<%=brand._id%>', this)" class="btn-action btn-success">Unblock</a>
                 <% } %>
                 <a href="#" 
                    onclick="confirmDelete('<%=brand._id%>', '<%=brand.brandName%>')" 
@@ -327,12 +331,32 @@
 </section>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
+  // Image Preview Functionality
+  const brandImageInput = document.getElementById("brandImage");
+  const previewImg = document.getElementById("previewImg");
+
+  brandImageInput.addEventListener("change", function(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        previewImg.src = e.target.result;
+        previewImg.style.display = "block";
+      };
+      reader.readAsDataURL(file);
+    } else {
+      previewImg.style.display = "none";
+      previewImg.src = "";
+    }
+  });
+
   // Add Brand Form Submission
   document.querySelector(".brand-form form").addEventListener("submit", async function (event) {
     event.preventDefault();
     
     const formData = new FormData(this);
+
     try {
       const response = await fetch("/admin/addBrand", {
         method: "POST",
@@ -352,8 +376,10 @@
         // Add the new brand to the table without reloading
         if (result.brand) {
           addBrandToTable(result.brand);
-          // Reset the form
+          // Reset the form and preview
           this.reset();
+          previewImg.style.display = "none";
+          previewImg.src = "";
         }
       } else {
         Swal.fire({
@@ -381,7 +407,7 @@
       <td>${brand.brandName}</td>
       <td>
         <div class="brand-logo">
-          <img src="/uploads/brands/${brand.brandImage}" alt="${brand.brandName}" />
+          <img src="/Uploads/brands/${brand.brandImage}" alt="${brand.brandName}" />
         </div>
       </td>
       <td>
@@ -415,13 +441,11 @@ function blockBrand(brandId, element) {
         statusCell.textContent = "Blocked";
         element.textContent = "Unblock";
         element.className = "btn-action btn-success";
-        element.onclick = function() { blockBrand(brandId, element); };
       } else {
         statusCell.className = "badge alert-success";
         statusCell.textContent = "Active";
         element.textContent = "Block";
         element.className = "btn-action btn-danger";
-        element.onclick = function() { blockBrand(brandId, element); };
       }
       
       Swal.fire({
@@ -509,5 +533,4 @@ function confirmDelete(brandId, brandName) {
   return false;
 }
 </script>
-
 <%- include("../../views/partials/admin/footer") %>

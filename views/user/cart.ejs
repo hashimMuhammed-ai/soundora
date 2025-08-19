@@ -179,8 +179,8 @@
           <h6>Cart total</h6>
           <ul>
             <li>Subtotal <span>₹<%= cart.cartTotal.toFixed(2) %></span></li>
-            <li>Shipping <span>₹0.00</span></li>
-            <li>Total <span id="cart-total">₹<%= cart.cartTotal.toFixed(2) %></span></li>
+            <li>Shipping <span>₹40.00</span></li>
+            <li>Total <span id="cart-total">₹<%= (cart.cartTotal + 40).toFixed(2) %></span></li>
           </ul>
           <% if (cart.items.length !==0) { %>
             <a href="/checkout" id="checkout-btn" class="primary-btn">Proceed to checkout</a>
@@ -220,8 +220,10 @@
     checkCartAvailability();
   })
 
-  function confirmRemove(productId) {
-    const cartRow = document.querySelector(`button[onclick="confirmRemove('${productId}')"]`).closest('tr'); // Adjusted for button
+ function confirmRemove(productId) {
+    const cartRow = document
+        .querySelector(`button[onclick="confirmRemove('${productId}')"]`)
+        ?.closest('tr'); // Adjusted for button
 
     Swal.fire({
         title: 'Are you sure?',
@@ -232,42 +234,41 @@
         cancelButtonColor: '#d33',
         confirmButtonText: 'Yes, remove it!'
     }).then((result) => {
-        if (result.isConfirmed) {
-            fetch(`/cart/remove/${productId}`, {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        cartRow.remove();
-                        calculateTotalPrice();
-                        const remainingItems = document.querySelectorAll('tr').length - 1; // Adjust for header row if present
-                        // Update cart badge with new items count
-                        const cartBadge = document.querySelector('.cart-badge');
-                        if (cartBadge) {
-                            cartBadge.textContent = data.itemsCount || 0;
-                        }
-                        if (remainingItems <= 0) {
-                            // Optional: Redirect or show empty cart message instead of reload
-                            // location.reload();
-                            Swal.fire('Empty Cart!', 'Your cart is now empty.', 'info');
-                        } else {
-                            Swal.fire('Removed!', 'Your item has been removed.', 'success');
-                        }
-                    } else {
-                        Swal.fire('Error!', data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error("Error:", error);
-                    Swal.fire('Error!', 'Something went wrong.', 'error');
-                });
-        }
+        if (!result.isConfirmed) return;
+
+        fetch(`/cart/remove/${productId}`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                return Swal.fire('Error!', data.message, 'error');
+            }
+
+            // Success case
+            cartRow?.remove();
+            calculateTotalPrice();
+
+            const remainingItems = document.querySelectorAll('tr').length - 1; // Adjust for header row if present
+            const cartBadge = document.querySelector('.cart-badge');
+            if (cartBadge) {
+                cartBadge.textContent = data.itemsCount || 0;
+            }
+
+            if (remainingItems <= 0) {
+                Swal.fire('Empty Cart!', 'Your cart is now empty.', 'info');
+            } else {
+                Swal.fire('Removed!', 'Your item has been removed.', 'success');
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            Swal.fire('Error!', 'Something went wrong.', 'error');
+        });
     });
 }
+
   function calculateTotalPrice() {
     const cartRows = document.querySelectorAll('tr');
     let subtotal = 0;
@@ -291,7 +292,7 @@
         li.querySelector('span').textContent = `₹${subtotal.toFixed(2)}`;
       }
       if (text === 'Total') {
-        li.querySelector('span').textContent = `₹${subtotal.toFixed(2)}`;
+        li.querySelector('span').textContent = `₹${(subtotal + 40).toFixed(2)}`;
       }
     });
 

@@ -14,39 +14,43 @@
     }
 
     .image-zoom-container {
-        position: fixed;
-        top: 50%;
-        right: 10%;
-        transform: translateY(-50%);
+        position: absolute;
+        top: 0;
+        left: calc(100% + 20px);
         width: 300px;
         height: 300px;
         border: 2px solid #ddd;
         background-color: #fff;
         background-repeat: no-repeat;
-        background-size: 200%;
-        background-position: center;
-        transition: all 0.3s ease;
         z-index: 1000;
         box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
         display: none;
+        background-size: 200%;
     }
 
     .zoom-lens {
         position: absolute;
-        border: 2px solid rgba(0, 0, 0, 0.3);
+        border: 2px solid rgba(0, 0, 0, 0.5);
         width: 100px;
         height: 100px;
-        background: rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.3);
         pointer-events: none;
         display: none;
-        z-index: 999;
+        z-index: 1001;
+        cursor: none;
+    }
+
+    .product__details__pic__slider {
+        position: relative;
+        padding-top: 100%;
+        overflow: visible;
     }
 
     .product__details__pic__slider img {
         cursor: zoom-in;
         width: 100%;
         height: 100%;
-        object-fit: contain; /* Changed from cover to contain to prevent cropping */
+        object-fit: contain;
         position: absolute;
         top: 0;
         left: 0;
@@ -100,7 +104,7 @@
             gap: 15px;
         }
         .custom-quantity-input {
-            margin-left: -20px; /* Move quantity slightly left for better UI */
+            margin-left: -20px;
         }
     }
 
@@ -174,7 +178,7 @@
         font-weight: 600;
         transition: all 0.3s ease;
         white-space: nowrap;
-        margin-left: 15px; /* Gap between quantity and add-to-cart */
+        margin-left: 15px;
     }
 
     .add-to-cart-btn:hover {
@@ -344,6 +348,11 @@
         .nav-tabs {
             display: none;
         }
+
+        .image-zoom-container,
+        .zoom-lens {
+            display: none !important;
+        }
     }
 
     @media (max-width: 767px) {
@@ -384,17 +393,12 @@
         flex: 0 0 auto;
         width: 100%;
         max-width: 400px;
+        position: relative;
     }
 
     .product-details-content {
         flex: 1;
         min-width: 0;
-    }
-
-    .product__details__pic__slider {
-        position: relative;
-        padding-top: 100%; /* Maintain aspect ratio, remove fixed height */
-        overflow: hidden;
     }
 
     .product-thumbs-container {
@@ -430,7 +434,7 @@
             max-width: 100%;
         }
         .product__details__pic__slider {
-            padding-top: 100%; /* Consistent aspect ratio on mobile */
+            padding-top: 100%;
         }
     }
 
@@ -453,13 +457,15 @@
             <div class="product-images">
                 <div class="product__details__pic__slider">
                     <% for (let i = 0; i < product.productImages.length; i++) { %>
-                        <img src="uploads/product-images/<%= product.productImages[i] %>" alt="product image" class="<%= i === 0 ? 'active' : '' %>" data-index="<%= i %>">
+                        <img src="/uploads/product-images/<%= product.productImages[i] %>" alt="product image" class="<%= i === 0 ? 'active' : '' %>" data-index="<%= i %>">
                     <% } %>
+                    <div class="image-zoom-container"></div>
+                    <div class="zoom-lens"></div>
                 </div>
                 <div class="product-thumbs-container">
                     <% for (let i = 0; i < product.productImages.length; i++) { %>
                         <div class="product-thumb <%= i === 0 ? 'active' : '' %>" data-index="<%= i %>">
-                            <img src="uploads/product-images/<%= product.productImages[i] %>" alt="product thumbnail">
+                            <img src="/uploads/product-images/<%= product.productImages[i] %>" alt="product thumbnail">
                         </div>
                     <% } %>
                 </div>
@@ -500,7 +506,7 @@
                     <div class="product__details__last__option">
                         <h5 class="text-center"><span>Guaranteed Safe Checkout</span></h5>
                         <div class="text-center mb-3">
-                            <img src="img/shop-details/details-payment.png" alt="" class="img-fluid" style="max-width: 300px;">
+                            <img src="/img/shop-details/details-payment.png" alt="" class="img-fluid" style="max-width: 300px;">
                         </div>
                         <ul class="pl-0">
                             <% if (product.quantity > 0) { %>
@@ -571,7 +577,7 @@
                     <a href="/productDetails?id=<%= relatedProducts[i]._id %>">
                         <div class="product__item__pic">
                             <span class="label">New</span>
-                            <img src="uploads/product-images/<%= relatedProducts[i].productImages[0] %>" alt="<%= relatedProducts[i].productName %>">
+                            <img src="/uploads/product-images/<%= relatedProducts[i].productImages[0] %>" alt="<%= relatedProducts[i].productName %>">
                         </div>
                     </a>
                     <div class="product__item__text">
@@ -602,27 +608,121 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Thumbnail click handler for slider
+        console.log('DOM loaded, initializing zoom functionality');
+        
         const thumbs = document.querySelectorAll('.product-thumb');
         const slides = document.querySelectorAll('.product__details__pic__slider img');
+        const $zoomContainer = $('.product__details__pic__slider .image-zoom-container');
+        const $zoomLens = $('.product__details__pic__slider .zoom-lens');
 
+        if (!slides.length) {
+            console.error('No product images found');
+            return;
+        }
+
+        // Function to ensure image is loaded before setting up zoom
+        function ensureImageLoaded($image, callback) {
+            if ($image[0].complete && $image[0].naturalWidth !== 0) {
+                console.log('Image already loaded:', $image.attr('src'));
+                callback($image);
+            } else {
+                console.log('Waiting for image to load:', $image.attr('src'));
+                $image.on('load', function() {
+                    console.log('Image loaded successfully:', $image.attr('src'));
+                    callback($image);
+                });
+                $image.on('error', function() {
+                    console.error('Image failed to load:', $image.attr('src'));
+                });
+                // Fallback in case load event doesn't fire
+                setTimeout(() => {
+                    if ($image[0].complete && $image[0].naturalWidth !== 0) {
+                        console.log('Fallback: Image loaded after timeout:', $image.attr('src'));
+                        callback($image);
+                    } else {
+                        console.error('Fallback: Image still not loaded:', $image.attr('src'));
+                    }
+                }, 1000);
+            }
+        }
+
+        // Desktop zoom functionality
+        function setupZoom($image) {
+            ensureImageLoaded($image, function($loadedImage) {
+                console.log('Setting up zoom for image:', $loadedImage.attr('src'));
+                
+                $loadedImage.off('mousemove mouseleave');
+                const containerWidth = $loadedImage[0].clientWidth;
+                const containerHeight = $loadedImage[0].clientHeight;
+                const lensSize = 100;
+                const zoomFactor = 2;
+
+                if (containerWidth <= 0 || containerHeight <= 0) {
+                    console.error('Invalid image dimensions:', containerWidth, containerHeight);
+                    return;
+                }
+
+                console.log('Image dimensions:', containerWidth, containerHeight);
+
+                $loadedImage.on('mousemove', function(e) {
+                    const offset = $loadedImage.offset();
+                    const x = e.pageX - offset.left;
+                    const y = e.pageY - offset.top;
+
+                    if (x >= 0 && x <= containerWidth && y >= 0 && y <= containerHeight) {
+                        console.log('Mouse move:', x, y);
+                        $zoomLens.css('display', 'block');
+                        $zoomContainer.css('display', 'block');
+
+                        const lensX = Math.max(0, Math.min(x - lensSize / 2, containerWidth - lensSize));
+                        const lensY = Math.max(0, Math.min(y - lensSize / 2, containerHeight - lensSize));
+
+                        $zoomLens.css({
+                            left: lensX + 'px',
+                            top: lensY + 'px'
+                        });
+
+                        const bgX = (x / containerWidth) * 100;
+                        const bgY = (y / containerHeight) * 100;
+
+                        $zoomContainer.css({
+                            backgroundImage: `url(${$loadedImage.attr('src')})`,
+                            backgroundPosition: `${bgX}% ${bgY}%`,
+                            backgroundSize: `${containerWidth * zoomFactor}px ${containerHeight * zoomFactor}px`
+                        });
+                    } else {
+                        $zoomLens.css('display', 'none');
+                        $zoomContainer.css('display', 'none');
+                    }
+                });
+
+                $loadedImage.on('mouseleave', function() {
+                    console.log('Mouse left image:', $loadedImage.attr('src'));
+                    $zoomLens.css('display', 'none');
+                    $zoomContainer.css('display', 'none');
+                });
+            });
+        }
+
+        // Thumbnail click handler
         thumbs.forEach(thumb => {
             thumb.addEventListener('click', function() {
                 const index = parseInt(this.getAttribute('data-index'));
+                console.log('Thumbnail clicked, index:', index);
                 thumbs.forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
                 slides.forEach(slide => slide.classList.remove('active'));
                 slides[index].classList.add('active');
-                setupZoom($(slides[index])); // Update zoom for the new active image
+                setupZoom($(slides[index]));
             });
         });
 
         // Mobile zoom functionality
-        const productImages = document.querySelectorAll('.product__details__pic__slider img');
         if (window.innerWidth <= 767) {
-            let startX, startY, endX, endY, scale = 1, prevDist;
+            console.log('Mobile view detected, enabling pinch-to-zoom');
+            let startX, startY, scale = 1, prevDist;
 
-            productImages.forEach(img => {
+            slides.forEach(img => {
                 img.addEventListener('touchstart', function(e) {
                     if (e.touches.length === 2) {
                         startX = (e.touches[0].pageX + e.touches[1].pageX) / 2;
@@ -643,57 +743,16 @@
                         );
                         scale = Math.min(Math.max(1, scale * (dist / prevDist)), 3);
                         prevDist = dist;
-                        img.style.transform = `scale(${scale})`;
+                        this.style.transform = `scale(${scale})`;
                     }
                 });
 
                 img.addEventListener('touchend', function() {
                     setTimeout(() => {
-                        img.style.transform = 'scale(1)';
+                        this.style.transform = 'scale(1)';
                         scale = 1;
                     }, 300);
                 });
-            });
-        }
-
-        // Desktop zoom functionality
-        const $zoomContainer = $('<div class="image-zoom-container"></div>').appendTo('body');
-        const $zoomLens = $('<div class="zoom-lens"></div>');
-
-        function setupZoom($image) {
-            $image.off('mousemove mouseleave');
-            $image.closest('.product__details__pic__slider').append($zoomLens);
-
-            $image.on('mousemove', function(e) {
-                const $this = $(this);
-                const offset = $this.offset();
-                const containerWidth = $this.width();
-                const containerHeight = $this.height();
-
-                const x = e.pageX - offset.left;
-                const y = e.pageY - offset.top;
-
-                $zoomLens.show();
-                $zoomContainer.show();
-
-                $zoomLens.css({
-                    left: x - 50,
-                    top: y - 50
-                });
-
-                const percentX = (x / containerWidth) * 100;
-                const percentY = (y / containerHeight) * 100;
-
-                $zoomContainer.css({
-                    backgroundImage: `url(${$this.attr('src')})`,
-                    backgroundPosition: `${percentX}% ${percentY}%`,
-                    backgroundSize: `${$this.width() * 2}px ${$this.height() * 2}px`
-                });
-            });
-
-            $image.on('mouseleave', function() {
-                $zoomLens.hide();
-                $zoomContainer.hide();
             });
         }
 
@@ -741,7 +800,7 @@
                     },
                     avatar: "https://cdn-icons-png.flaticon.com/512/845/845646.png",
                 }).showToast();
-                document.querySelector('.cart-badge').textContent = data.itemsCount || 0; // Update badge
+                document.querySelector('.cart-badge').textContent = data.itemsCount || 0;
             } else {
                 throw new Error(data.message || 'Failed to add product to cart');
             }

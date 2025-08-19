@@ -2,6 +2,7 @@ const User = require('../../models/userModel');
 const Category = require('../../models/categoryModel');
 const Product = require('../../models/productModel');
 const Brand = require('../../models/brandModel');
+const Wallet = require('../../models/walletModel');
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 
@@ -51,7 +52,8 @@ const loadHompage = async (req, res) => {
 const getSignup = (req, res) => {
   try {
     const error = req.flash('error');
-    return res.render('user/signup', {error: error[0]});
+    const referralCode = req.query.ref || null;
+    return res.render('user/signup', {error: error[0], referralCode});
   }
   catch (error) {
     console.log(error);
@@ -92,8 +94,8 @@ async function sendVerificationEmail(email, otp){
 
 const postSignup = async (req, res) => {
   try {
-    const {name, email, phone, password} = req.body;
-    console.log(typeof(phone) );
+    const {name, email, phone, password, referralCode} = req.body;
+
     const userExist = await User.findOne({email})
     if(userExist){
       req.flash('error', 'Email Already Existed');
@@ -108,13 +110,10 @@ const postSignup = async (req, res) => {
     }
 
     req.session.userOtp = otp;
-    req.session.userData = {name, email, password, phone};
+    req.session.userData = {name, email, password, phone, referralCode};
 
     res.render('user/verify-otp');
     console.log("OTP Sent", otp);
-
-    
-    
 
   }
   catch (error) {
@@ -123,24 +122,75 @@ const postSignup = async (req, res) => {
   }
 }
 
+const generateReferralCode = (name) => {
+  return name.toLowerCase().slice(0, 3) + Math.random().toString(36).substring(2, 7);
+};
+
 const verifyOtp = async (req, res) => {
   try {
     const {otp} = req.body;
-    console.log(otp);
-    if(otp === req.session.userOtp){
-      const user = req.session.userData;
-      const hashPassword = await bcrypt.hash(user.password, 10);
-      const userData = await User.create({name: user.name, email: user.email, phone: user.phone, password: hashPassword});
-      req.session.user = userData._id;
-      req.session.userName = userData.name;
-      res.status(200).json({
-      success: true,
-      message: 'OTP verified successfully',
-      redirectUrl: '/login'
-});
-    }else {
-      res.status(400).json({success: false, message: 'invalid OTP, Please try again'})
+    
+    if(otp !== req.session.userOtp){
+      return res.status(400).json({success: false, message: 'Invalid OTP, Please try again'})
     }
+
+    const user = req.session.userData;
+    const hashPassword = await bcrypt.hash(user.password, 10);
+    const newReferralCode = generateReferralCode(user.name);  
+
+    const newUserData = {
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      password: hashPassword,
+      referralCode: newReferralCode
+    }
+
+    let referrer = null;
+    if(user.referralCode){
+      referrer = await User.findOne({referralCode: user.referralCode});
+
+      if(referrer){
+        newUserData.referredBy = user.referralCode;
+        referrer.wallet += 150;
+
+        const walletDoc = await Wallet.findOne({userId: referrer._id})
+        if(walletDoc){
+          walletDoc.balance += 150;
+          walletDoc.transactions.push({
+            type: 'credit',
+            amount: 150,
+            description: `Referral bonus from ${user.name}`,
+            status: 'completed'
+          })
+          await walletDoc.save();
+        }else{
+          await Wallet.create({
+            userId: referrer._id,
+            balance: 150,
+            transactions: [{
+              type: 'credit',
+              amount: 150,
+              description: `Referral bonus from ${user.name}`,
+              status: 'completed'
+            }]
+          })
+        }
+      }
+    }
+    
+    const userData = await User.create(newUserData);
+
+    if (referrer) {
+      referrer.redeemedUsers.push(userData._id);
+      await referrer.save();
+    }
+
+    req.session.user = userData._id;
+    req.session.userName = userData.name
+
+    res.status(200).json({success: true, message: 'OTP verified successfully', redirectUrl: '/login'})
+
   } catch (error) {
     console.error('Error verifying OTP', error);
     res.status(500).json({success: false, message: 'An error occured'})
@@ -210,135 +260,143 @@ const postLogin = async (req, res) => {
 
 
 const loadShoppingPage = async (req, res) => {
-   try {
-      const user = req.session.user;
-      const categories = await Category.find({ isListed: true })   
-      const brands = await Brand.find({isBlocked: false})
+    try {
+        const categories = await Category.find({ isListed: true });
+        const brands = await Brand.find({ isBlocked: false });
 
-      const userData = await User.findOne({ _id: user });
-      const page = parseInt(req.query.page) || 1;
-      const limit = 6
-      const skip = (page - 1) * limit;
-      
-      const query = {
-         isListed: true,
-         quantity: { $gt: 0 }
-      }
+        const page = parseInt(req.query.page) || 1;
+        const limit = 6;
+        const skip = (page - 1) * limit;
 
-      const products = await Product.find(query) 
-      .populate('category')
-      .sort({ createdAt: 1 }).skip(skip).limit(limit)
+        // Build query to include only valid categories and brands
+        const query = {
+            isListed: true,
+            quantity: { $gt: 0 },
+            category: { $in: await Category.find({ isListed: true }).distinct('_id'), $ne: null },
+            brand: { $in: await Brand.find({ isBlocked: false }).distinct('_id'), $ne: null }
+        };
 
-      const totalProducts = await Product.countDocuments({
-         isListed: true,
-         quantity: { $gt: 0 }
-      })
+        // Count total products with the same query
+        const totalProducts = await Product.countDocuments(query);
 
-      const totalPages = Math.ceil(totalProducts / limit);
-      const categoriesWithIds = categories.map(category => ({
-         _id: category._id.toString(),
-         name: category.name,
-         description: category.description,
-      }));
-      const brandsWithIds = brands.map(brand => ({
-         _id: brand._id.toString(),
-         brandName: brand.brandName,
-         brandImage: brand.brandImage
-      }));
+        // Fetch products with populate and pagination
+        const products = await Product.find(query)
+            .populate({ path: 'category', match: { isListed: true } })
+            .populate({ path: 'brand', match: { isBlocked: false } })
+            .skip(skip)
+            .limit(limit)
+            .lean(); // Use lean() for performance
 
-      res.render('user/shop', {
-         user: userData,
-         products: products,
-         categories: categoriesWithIds,
-         brands: brandsWithIds,
-         category: categories, 
-         brand: brands,
-         totalProducts: totalProducts,
-         currentPage: page,
-         totalPages: totalPages,
-      })
+        // Filter out products where category or brand is null after populate
+        const filteredProducts = products.filter(p => p.category && p.brand);
 
-   } catch (error) {
-      console.log("load Shop Page error", error);
-      res.status(500).render('error', { message: "Failed to load shop page" });
-   }
-}
+        const totalPages = Math.ceil(totalProducts / limit);
+
+        res.render('user/shop', {
+            products: filteredProducts,
+            category: categories,
+            brand: brands,
+            totalProducts,
+            currentPage: page,
+            totalPages,
+            limit
+        });
+
+    } catch (error) {
+        console.log("load Shop Page error", error);
+        res.status(500).render('error', { message: "Failed to load shop page" });
+    }
+};
+
 
 
 const filterProducts = async (req, res) => {
-   try {
-       const { categories, priceRange, searchQuery, sortBy, page = 1 } = req.body;
-       const limit = 6; 
-       const skip = (page - 1) * limit;
+    try {
+        const { categories, brands, priceRange, searchQuery, sortBy, page = 1 } = req.body;
+        const limit = 6;
+        const skip = (page - 1) * limit;
 
-       let filter = { 
-           isListed: true,
-           quantity: { $gt: 0 } 
-       };
+        let filter = {
+            isListed: true,
+            quantity: { $gt: 0 }
+        };
 
-       const listedCategories = await Category.find({ isListed: true }).lean()
-       const listedBrands = await Brand.find({ isBlocked: false }).lean()
+        const listedCategoryIds = await Category.find({ isListed: true }).distinct('_id');
+        const listedBrandIds = await Brand.find({ isBlocked: false }).distinct('_id');
 
-       if (categories && categories.length > 0) {
-           const filteredCategories = listedCategories.filter((cat) => 
-               categories.includes(cat._id.toString())
-           );
-           filter.category = { $in: filteredCategories.map(cat => cat._id), $ne: null };
-       }
+        if (categories && categories.length > 0) {
+            const filteredCategories = categories.filter((catId) =>
+                listedCategoryIds.map(id => id.toString()).includes(catId)
+            );
+            filter.category = { $in: filteredCategories, $ne: null };
+        } else {
+            filter.category = { $in: listedCategoryIds, $ne: null };
+        }
 
-       if (req.body.brands && req.body.brands.length > 0) {
-           const filteredBrands = listedBrands.filter((brand) => 
-               req.body.brands.includes(brand._id.toString())
-           );
-           filter.brand = { $in: filteredBrands.map(brand => brand._id), $ne: null };
-       }
+        if (brands && brands.length > 0) {
+            const filteredBrands = brands.filter((brandId) =>
+                listedBrandIds.map(id => id.toString()).includes(brandId)
+            );
+            filter.brand = { $in: filteredBrands, $ne: null };
+        } else {
+            filter.brand = { $in: listedBrandIds, $ne: null };
+        }
 
-       if (priceRange) {
-           const [min, max] = priceRange.split('-').map(Number);
-           filter.salePrice = max ? { $gte: min, $lte: max } : { $gte: min };
-       }
+        if (priceRange) {
+            const [min, max] = priceRange.split('-').map(Number);
+            filter.salePrice = max ? { $gte: min, $lte: max } : { $gte: min };
+        }
 
-       if (searchQuery) {
-           filter.productName = { $regex: searchQuery, $options: 'i' };
-       }
+        if (searchQuery) {
+            filter.productName = { $regex: searchQuery, $options: 'i' };
+        }
 
-       let query = Product.find(filter).populate('category').skip(skip).limit(limit);
+        // Count products with exact same filter
+        const totalProducts = await Product.countDocuments(filter);
 
-       if (sortBy) {
-           switch (sortBy) {
-               case 'price-low-high':
-                   query = query.sort({ salePrice: 1 });
-                   break;
-               case 'price-high-low':
-                   query = query.sort({ salePrice: -1 });
-                   break;
-               case 'new-arrivals':
-                   query = query.sort({ createdAt: -1 });
-                   break;
-               case 'a-z':
-                   query = query.sort({ productName: 1 });
-                   break;
-               case 'z-a':
-                   query = query.sort({ productName: -1 });
-                   break;
-           }
-       }
+        let query = Product.find(filter)
+            .populate({ path: 'category', match: { isListed: true } })
+            .populate({ path: 'brand', match: { isBlocked: false } })
+            .skip(skip)
+            .limit(limit);
 
-       const products = await query.exec();
-       const totalProducts = await Product.countDocuments(filter);
+        if (sortBy) {
+            switch (sortBy) {
+                case 'price-low-high':
+                    query = query.sort({ salePrice: 1 });
+                    break;
+                case 'price-high-low':
+                    query = query.sort({ salePrice: -1 });
+                    break;
+                case 'new-arrivals':
+                    query = query.sort({ createdAt: -1 });
+                    break;
+                case 'a-z':
+                    query = query.sort({ productName: 1 });
+                    break;
+                case 'z-a':
+                    query = query.sort({ productName: -1 });
+                    break;
+            }
+        }
 
-       res.json({
-           success: true,
-           products: products,
-           totalProducts: totalProducts,
-           totalPages: Math.ceil(totalProducts / limit),
-           currentPage: page
-       });
+        const rawProducts = await query.exec();
+        // Filter out products where category or brand is null after populate
+        const products = rawProducts.filter(p => p.category && p.brand);
 
-   } catch (error) {
-       console.log("error filtering products", error);
-       res.status(500).json({ success: false, message: "Internal server error" });
-   }
+        res.json({
+            success: true,
+            products: products,
+            totalProducts: totalProducts,
+            totalPages: Math.ceil(totalProducts / limit),
+            currentPage: parseInt(page),
+            limit
+        });
+
+    } catch (error) {
+        console.log("error filtering products", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
 };
 
 

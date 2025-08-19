@@ -57,10 +57,13 @@ const addBrand = async (req, res) => {
 
 
 const blockBrand = async (req, res) => {
+    // console.log('blockBrand')
     try {
         const id = req.query.id
+        
         await Brand.updateOne({ _id: id }, { $set: { isBlocked: true } })
         return res.status(200).json({ success: true, message: "Brand blocked successfully" });
+
     } catch (error) {
         console.log("error in block brand", error)
         return res.status(500).json({ success: false, message: "Something went wrong. Please try again." });

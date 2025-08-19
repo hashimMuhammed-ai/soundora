@@ -29,13 +29,7 @@ const createOrder = async (req, res) => {
         }
 
         const { amount, currency } = req.body;
-        if(cart.cartTotal > 0) {
-            if(cart.cartTotal + 40 !== amount){
-            return res.status(404).json({success: false, error: 'Cart total is wrong'});
-        }
-        }
         
-
         const options = {
             amount: amount * 100, // Convert to paisa
             currency,
@@ -121,7 +115,7 @@ const verifyPayment = async (req, res) => {
                 paymentMethod: "razorpay",
                 items: orderItems,
                 totalAmount: totalAmount,
-                status: "pending",
+                status: "processing",
                 paymentStatus: "success",
                 couponApplied: couponCode ? true : false,
                 discount: discountAmount || 0,
@@ -258,7 +252,7 @@ const verifyRetryPayment = async (req, res) => {
             .digest("hex");
 
         if (generatedSignature === razorpay_signature) {
-            failedOrder.status = "pending";
+            failedOrder.status = "processing";
             failedOrder.paymentStatus = "success";
             failedOrder.razorpay_order_id = razorpay_order_id;
             failedOrder.razorpay_payment_id = razorpay_payment_id;

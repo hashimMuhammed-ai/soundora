@@ -17,6 +17,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script> -->
     <style>
         /* Product Card Styles */
+
+        .primary-btn:hover {
+            background-color: #000000;
+            color: #F0C808;
+            transform: scale(1.05);
+        }
+            
         .product-card {
             border: 1px solid #e0e0e0;
             border-radius: 12px;
@@ -251,6 +258,27 @@
             border-radius: 10px;
         }
 
+        .logo-scroller {
+    display: flex;
+    gap: 40px; /* Adjusted for balanced spacing */
+    animation: scroll 20s linear infinite;
+    white-space: nowrap;
+}
+
+
+@keyframes scroll {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.logo-scroller:hover {
+    animation-play-state: paused;
+}
+
         .video-container {
             position: relative;
             width: 100%;
@@ -402,18 +430,18 @@
 
 
     <!-- Hero Section Begin -->
-    <section class="hero">
+    <section class="hero" style="margin-bottom: -40px">
         <div class="hero__slider owl-carousel">
             <div class="hero__items set-bg" data-setbg="img/hero/hero-1.jpg">
                 <div class="container">
                     <div class="row">
                         <div class="col-xl-5 col-lg-7 col-md-8">
                             <div class="hero__text">
-                                <h6>SUMMER SOUND COLLECTION</h6>
+                                <h6 style="color: #F0C808; letter-spacing: 2px; font-weight: 500; font-size: 20px; font-weight: bold;">SUMMER SOUND COLLECTION</h6>
                                 <h2>Soundora – Premium Audio for 2025</h2>
-                                <p>Engineered to perfection. Experience crystal-clear sound with our latest Bluetooth speakers and soundbars. Built for audiophiles. Designed for life.</p>
-                                <a href="/shop" class="primary-btn" style="background-color: white;color: black;">Shop
-                                    now
+                                <p style="font-weight: bold;">Engineered to perfection. Experience crystal-clear sound with our latest Bluetooth speakers and soundbars. Built for audiophiles. Designed for life.</p>
+                                <a href="/shop" class="primary-btn" style="background-color: #F0C808; color: #000000; padding: 12px 28px; border: none; border-radius: 4px; font-weight: bold; transition: 0.3s ease-in-out;">
+                                    Shop now
                                 </a>
                                 <div class="hero__social">
                                     <a href="#"><i class="fa-brands fa-facebook" style="color: #ffffff;"></i></a>
@@ -431,11 +459,11 @@
                     <div class="row">
                         <div class="col-xl-5 col-lg-7 col-md-8">
                             <div class="hero__text">
-                                <h6>FALL / WINTER AUDIO LINE</h6>
-                                <h2>Refined Sound – Winter Collection 2025</h2>
-                                <p>Experience rich, immersive sound with our premium speaker range. Crafted for audiophiles who value clarity, depth, and design.</p>
-                                <a href="/shop" class="primary-btn" style="background-color: white;color: black;">Shop
-                                    now </a>
+                                <h6 style="color: #F0C808; letter-spacing: 2px; font-size: 20px; font-weight: bold;">FALL / WINTER AUDIO LINE</h6>
+                                <h2 style="color: #FFFFFF; font-weight: 700; font-size: 48px;">Refined Sound – Winter Collection 2025</h2>
+                                <p style="color: #FFFFFF; font-size: 17px; line-height: 1.6; font-weight: bold;">Experience rich, immersive sound with our premium speaker range. Crafted for audiophiles who value clarity, depth, and design.</p>
+                                <a href="/shop" class="primary-btn" style="background-color: #F0C808; color: #000000; padding: 12px 28px; font-weight: bold; border: none; border-radius: 4px; transition: 0.3s ease-in-out;">
+                                   Shop now </a>
                                 <div class="hero__social">
                                     <a href="#"><i class="fa-brands fa-facebook" style="color: #ffffff;"></i></a>
                                     <a href="#"><i class="fa-brands fa-twitter" style="color: #ffffff;"></i></a>
@@ -460,62 +488,9 @@
             </div>
         </div>
     </a>
-    <!-- Banner Section Begin -->
-    <section class="banner spad">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-7 offset-lg-4">
-                    <div class="banner__item">
-                        <div class="banner__item__pic">
-                            <img src="img/banner/banner-1.jpg" alt="" style="
-                            display: block;
-                            height: auto;
-                            object-fit: cover;
-                            width: 464px;
-                            margin-bottom: 50px;
-                            border-radius: 25px;
-                        ">
-                        </div>
-                        <div id="myElement" class="banner__item__text">
-                            <h2 style="margin-right: 30px;">Speaker Collections 2025</h2>
-                            <a href="/shop">Shop now</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-5">
-                    <div class="banner__item banner__item--middle">
-                        <div class="banner__item__pic">
-                            <img src="img/banner/banner-2.jpg" alt="" style="border-radius: 25px;">
-                        </div>
-                        <div class="banner__item__text">
-                            <h2>Retro Speakers</h2>
-                            <a href="/shop">Shop now</a>
-                        </div>
-                    </div>
-                </div>
-                <!-- <div class="col-lg-7">
-                    <div class="banner__item banner__item--last">
-                        <div class="banner__item__pic">
-                            <img src="img/banner/banner-3.jpg" alt="" style="    height: auto;
-                                height: auto;
-                                object-fit: cover;
-                                width: 464px;
-                                margin-right: 84px; 
-                                border-radius: 25px;">
-                        </div>
-                        <div class="banner__item__text2">
-                            <h2 style="margin-left: 93px;">Legend Watches </h2>
-                            <a href="/shop" style="    margin-left: 97px;">Shop now</a>
-                        </div>
-                    </div>
-                </div> -->
-            </div>
-        </div>
-    </section>
-    <!-- Banner Section End -->
 
     <!-- Categories Section Begin -->
-    <section class="categories spad">
+    <section style="margin-top: 80px;" class="categories spad">
         <div class="container">
             <div class="row">
                 <div class="col-lg-3">
@@ -562,7 +537,7 @@
     </section>
 
     <!-- Product Section Begin -->
-    <section class="product spad">
+    <section class="product spad" style="margin-top: 50px;">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
@@ -652,12 +627,12 @@
                 margin-top: 48px;">
 
             <div class="col-lg-12">
-                <ul class="filter__controls">
+                <ul class="filter__controls" style="margin-top: -80px; margin-bottom: -190px;">
                     <li data-filter=".new-arrivals">BRANDS</li>
                 </ul>
             </div>
             <% brands.forEach(brand=> { %>
-                <img src="/uploads/brands/<%= brand.brandImage %>" alt="<%= brand.brandName %>" style="    width: 210px;
+                <img src="/uploads/brands/<%= brand.brandImage %>" alt="<%= brand.brandName %>" style=" margin-top: -40px; margin-bottom: 20px; width: 210px;
                 height: 183px;">
                 <% }); %>
         </div>
@@ -672,7 +647,7 @@
                 <div class="col-lg-8">
                     <div class="instagram__pic">
                         <div class="instagram__pic__item">
-                            <img src="img/instagram/instagram-1.jpg" alt="Watch Image">
+                            <img src="img/instagram/instagram-1.jpg" alt="Festival Image" style="margin-top: -20px">
                         </div>
                     </div>
                 </div>
@@ -700,14 +675,6 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ productId })
                 })
-
-                const contentType = response.headers.get("content-type");
-                if (!contentType || !contentType.includes("application/json")) {
-                    showErrorMessage('You loged first then add to Wishlist');
-                    return;
-                }
-
-
 
                 const data = await response.json();
 
@@ -740,7 +707,7 @@
                 console.error('Error:', error);
 
                 Toastify({
-                    text: "Error\n" + error || 'Failed to add product to Wishlist',
+                    text: `Error\n${error?.message ?? 'Failed to add product to Wishlist'}`,
                     duration: 2000,
                     close: true,
                     gravity: "top",

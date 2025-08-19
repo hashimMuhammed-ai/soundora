@@ -27,8 +27,7 @@ const couponSchema = new Schema({
         required: true
     },
     couponMaxAmount: {  //// Optional
-        type: Number,
-        required: true
+        type: Number
     },
     couponDescription: {  //// Optional
         type: String,

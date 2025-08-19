@@ -25,14 +25,17 @@ const productSchema = new Schema({
     required: true
   },
   salePrice: {
-    type: Number,
-    required: true
+    type: Number
   },
   discountPrice: {
     type: Number,
     default: 0
   },
   productOffer: {
+    type: Number,
+    default: 0
+  },
+  appliedOffer: {
     type: Number,
     default: 0
   },

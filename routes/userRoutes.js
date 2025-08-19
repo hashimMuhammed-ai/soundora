@@ -5,6 +5,8 @@ const productCtrl = require('../controllers/user/productController');
 const cartCtrl = require('../controllers/user/cartController')
 const checkoutCtrl = require('../controllers/user/checkoutController');
 const razorpayCtrl = require('../controllers/user/razorpayController');
+const wishlistCtrl = require('../controllers/user/wishlistController');
+const walletCtrl = require('../controllers/user/walletController');
 const passport = require('passport');
 const profileCtrl = require('../controllers/user/profileController');
 const {userLoginAuth, userAuth} = require('../middlewares/auth');
@@ -14,7 +16,7 @@ const uploads = multer({storage: storage});
 
 
 
-router.get('/pageNotFound', userCtrl.pageNotFound);
+router.get('/pageNotFound', userAuth, userCtrl.pageNotFound);
 router.get('/', userAuth, userCtrl.loadHompage);
 router.get('/signup', userLoginAuth, userCtrl.getSignup);
 router.post('/signup', userLoginAuth, userCtrl.postSignup);
@@ -73,12 +75,28 @@ router.post('/returnOrder/:orderId', userAuth, checkoutCtrl.returnOrder);
 router.get('/invoice/:id', userAuth, checkoutCtrl.generateInvoice);
 router.post("/validateCheckoutItems",userAuth, checkoutCtrl.validateCheckoutItems)
 
+
+router.post("/applyCoupon", userAuth, checkoutCtrl.applyCoupon)
+router.post('/removeCoupon', userAuth, checkoutCtrl.removeCoupon);
+
 //razorpay
 router.post("/createOrder", userAuth, razorpayCtrl.createOrder)
 router.post("/verifyPayment", userAuth, razorpayCtrl.verifyPayment);
 router.post("/retryPayment/:orderId", userAuth, razorpayCtrl.retryPayment);
 router.get("/paymentFailed/:orderId", userAuth, razorpayCtrl.paymentFailed);
 router.post("/verifyRetryPayment", userAuth, razorpayCtrl.verifyRetryPayment);
+
+//Wishlist Management
+router.get("/wishlist", userAuth, wishlistCtrl.loadWishlist)
+router.post("/addToWishlist", userAuth, wishlistCtrl.addToWishlist)
+router.delete("/wishlist/remove/:productId", userAuth, wishlistCtrl.removeWishlistItem)
+
+//Wallet Management
+router.post("/addMoney", userAuth, walletCtrl.addMoney);
+
+
+
+
 
 
 

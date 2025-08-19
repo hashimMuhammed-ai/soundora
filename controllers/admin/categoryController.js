@@ -1,4 +1,5 @@
 const Category = require('../../models/categoryModel');
+const Product = require('../../models/productModel');
 
 
 const categoryInfo = async (req, res) => {
@@ -37,16 +38,19 @@ const addCategory = async (req, res) => {
   try {
     const {name, description, categoryOffer} = req.body;
     const categoryName = name.trim();
+
     const existingCategory = await Category.findOne({ name: { $regex: `^${categoryName}$`, $options: 'i' } });
     if(existingCategory){
       return res.status(400).json({error: 'Category already exists'});
     }
+
     const newCategory = new Category({
       name,
       description,
       categoryOffer
     })
     await newCategory.save();
+
     return res.json({success: true, message: 'Category Added Successfully'});
   } catch (error) {
     return res.status(500).json({error: 'Internal Server Error'});
@@ -139,6 +143,19 @@ const editCategory = async (req, res) => {
                message: 'Category not found' 
            });
        }
+
+       const products = await Product.find({category: categoryId});
+
+       for(const product of products){
+        if( offer > product.productOffer){
+          product.appliedOffer = offer;
+          product.salePrice = Math.round(product.regularPrice - (product.regularPrice * offer / 100));
+          product.offerEndDate = null;
+        }
+        await product.save();
+       }
+       
+
 
        res.status(200).json({ 
            success: true, 
