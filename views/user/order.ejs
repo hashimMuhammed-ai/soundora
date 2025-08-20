@@ -576,7 +576,7 @@
                         <% }); %>
                         <tr class="total-row">
                             <td colspan="<%= order.orderStatus !== 'cancelled' && order.orderStatus !== 'delivered' && order.orderStatus !== 'Return requested' && order.orderStatus !== 'Return approved' ? 5 : 4 %>" style="text-align: right;">Total Amount:</td>
-                            <td>₹<%= order.totalAmount || order.total || 0 %></td>
+                            <td>₹<%= order.totalAmount %></td>
                         </tr>
 
                     <% } else { %>
