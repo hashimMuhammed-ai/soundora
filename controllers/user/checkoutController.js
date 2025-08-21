@@ -698,7 +698,6 @@ const validateCheckoutItems = async (req, res) => {
         const { orderedItems } = req.body;
         
         const unavailableItems = [];
-        console.log(orderedItems);
         
         for (const item of orderedItems) {
             const product = await Product.findById(item.productId).populate('category');

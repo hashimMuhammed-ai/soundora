@@ -1,6 +1,7 @@
 const Wishlist = require("../../models/wishlistModel");
 const Cart = require("../../models/cartModel");
 const { getDiscountPrice, getDiscountPriceCart } = require("../../helpers/offerHelper");
+const HTTP_STATUS = require('../../constants/httpStatus');
 
 
 
@@ -45,7 +46,7 @@ const loadWishlist = async (req, res) => {
         });
     } catch (error) {
         console.error("Error in load wishlist:", error);
-        res.status(500).redirect("/userProfile");
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).redirect("/userProfile");
     }
 };
 const addToWishlist = async (req,res)=>{
@@ -54,7 +55,7 @@ const addToWishlist = async (req,res)=>{
         const {productId} = req.body
         
         if (!userId) {
-            return res.status(401).json({ success: false, message: "User not logged in" });
+            return res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "User not logged in" });
         }
 
         let wishlist = await Wishlist.findOne({userId})
@@ -66,12 +67,12 @@ const addToWishlist = async (req,res)=>{
         const cart = await Cart.findOne({ userId, "items.productId": productId });
 
         if (cart) {
-            return res.status(400).json({ success: false, message: "Item is already in the cart" });
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Item is already in the cart" });
         }
 
         const existingItemIndex = wishlist.items.findIndex(item => item.productId.toString() === productId);
          if (existingItemIndex !== -1) {
-            return res.status(200).json({ success: false, message: "Item already in wishlist" });
+            return res.status(HTTP_STATUS.OK).json({ success: false, message: "Item already in wishlist" });
         }
 
         wishlist.items.push({productId})
@@ -81,7 +82,7 @@ const addToWishlist = async (req,res)=>{
         res.status(200).json({success:true, message:"Added to wishlist"})
     } catch (error) {
         console.log("error in add to wishlist", error)
-        res.status(500).json({success:false, message:"Internal server error"})
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({success:false, message:"Internal server error"})
     }
 }
 
@@ -96,13 +97,13 @@ const removeWishlistItem = async (req,res)=>{
         )
 
         if(!wishlist){
-            return res.status(404).json({success:false, message:"Wishlist not found"})
+            return res.status(HTTP_STATUS.NOT_FOUND).json({success:false, message:"Wishlist not found"})
         }
         res.status(200).json({success:true, message:"Removed from wishlist"})
 
     } catch (error) {
         console.log("error in remove wishlist item", error)
-        res.status(500).json({success:false, message:"Internal server error"})
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({success:false, message:"Internal server error"})
     }
 }
 

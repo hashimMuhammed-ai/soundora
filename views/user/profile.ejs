@@ -793,26 +793,26 @@
                   </div>
 
                   <!-- Pagination Controls -->
-                  <% if (totalPages> 1) { %>
+                  <% if (orderTotalPages > 1) { %>
                     <nav>
                       <ul class="pagination justify-content-center mt-3">
-                        <% if (currentPage> 1) { %>
+                        <% if (orderCurrentPage > 1) { %>
                           <li class="page-item">
-                            <a class="page-link" href="?page=<%= currentPage - 1 %>#orders">Previous</a>
+                            <a class="page-link" href="?orderPage=<%= orderCurrentPage - 1 %>#orders">Previous</a>
                           </li>
                           <% } %>
 
-                        <% let startPage=Math.max(1, currentPage - 1); 
-                        let endPage=Math.min(totalPages, currentPage + 1); 
-                        if (currentPage===1) { 
-                          endPage=Math.min(totalPages, startPage + 2); 
-                        } else if (currentPage===totalPages) { 
+                        <% let startPage=Math.max(1, orderCurrentPage - 1); 
+                        let endPage=Math.min(orderTotalPages, orderCurrentPage + 1); 
+                        if (orderCurrentPage===1) { 
+                          endPage=Math.min(orderTotalPages, startPage + 2); 
+                        } else if (orderCurrentPage===orderTotalPages) { 
                           startPage=Math.max(1, endPage - 2);
                         } 
                         %>
                         <% if (startPage> 1) { %>
                           <li class="page-item">
-                            <a class="page-link" href="?page=1#orders">1</a>
+                            <a class="page-link" href="?orderPage=1#orders">1</a>
                           </li>
                         <% if (startPage> 2) { %>
                           <li class="page-item disabled"><span class="page-link">...</span></li>
@@ -820,28 +820,28 @@
                             <% } %>
 
                         <% for (let i=startPage; i <=endPage; i++) { %>
-                          <li class="page-item <%= i === currentPage ? 'active' : '' %>">
-                            <a class="page-link" href="?page=<%= i %>#orders">
+                          <li class="page-item <%= i === orderCurrentPage ? 'active' : '' %>">
+                            <a class="page-link" href="?orderPage=<%= i %>#orders">
                               <%= i %>
                             </a>
                           </li>
                           <% } %>
 
-                        <% if (endPage < totalPages) { %>
-                        <% if (endPage < totalPages - 1) { %>
+                        <% if (endPage < orderTotalPages) { %>
+                        <% if (endPage < orderTotalPages - 1) { %>
                           <li class="page-item disabled"><span class="page-link">...</span></li>
                           <% } %>
                             <li class="page-item">
-                              <a class="page-link" href="?page=<%= totalPages %>#orders">
-                                <%= totalPages %>
+                              <a class="page-link" href="?orderPage=<%= orderTotalPages %>#orders">
+                                <%= orderTotalPages %>
                               </a>
                             </li>
                             <% } %>
 
-                        <% if (currentPage < totalPages) { %>
+                        <% if (orderCurrentPage < orderTotalPages) { %>
                           <li class="page-item">
                             <a class="page-link"
-                              href="?page=<%= currentPage + 1 %>#orders">Next</a>
+                              href="?orderPage=<%= orderCurrentPage + 1 %>#orders">Next</a>
                           </li>
                           <% } %>
                       </ul>
@@ -923,6 +923,60 @@
                       </tbody>
                     </table>
                   </div>
+                  <% if (walletTotalPages > 1) { %>
+                    <nav>
+                      <ul class="pagination justify-content-center mt-3">
+                        <% if (walletCurrentPage > 1) { %>
+                          <li class="page-item">
+                            <a class="page-link" href="?walletPage=<%= walletCurrentPage - 1 %>#walletHistory">Previous</a>
+                          </li>
+                          <% } %>
+
+                        <% let startPage=Math.max(1, walletCurrentPage - 1); 
+                        let endPage=Math.min(walletTotalPages, walletCurrentPage + 1); 
+                        if (walletCurrentPage===1) { 
+                          endPage=Math.min(walletTotalPages, startPage + 2); 
+                        } else if (walletCurrentPage===walletTotalPages) { 
+                          startPage=Math.max(1, endPage - 2);
+                        } 
+                        %>
+                        <% if (startPage> 1) { %>
+                          <li class="page-item">
+                            <a class="page-link" href="?walletPage=1#walletHistory">1</a>
+                          </li>
+                        <% if (startPage> 2) { %>
+                          <li class="page-item disabled"><span class="page-link">...</span></li>
+                          <% } %>
+                            <% } %>
+
+                        <% for (let i=startPage; i <=endPage; i++) { %>
+                          <li class="page-item <%= i === walletCurrentPage ? 'active' : '' %>">
+                            <a class="page-link" href="?walletPage=<%= i %>#walletHistory">
+                              <%= i %>
+                            </a>
+                          </li>
+                          <% } %>
+
+                        <% if (endPage < walletTotalPages) { %>
+                        <% if (endPage < walletTotalPages - 1) { %>
+                          <li class="page-item disabled"><span class="page-link">...</span></li>
+                          <% } %>
+                            <li class="page-item">
+                              <a class="page-link" href="?walletPage=<%= walletTotalPages %>#walletHistory">
+                                <%= walletTotalPages %>
+                              </a>
+                            </li>
+                            <% } %>
+
+                        <% if (walletCurrentPage < walletTotalPages) { %>
+                          <li class="page-item">
+                            <a class="page-link"
+                              href="?walletPage=<%= walletCurrentPage + 1 %>#walletHistory">Next</a>
+                          </li>
+                          <% } %>
+                      </ul>
+                    </nav>
+                    <% } %>
                 </div>
               </div>
             </div>

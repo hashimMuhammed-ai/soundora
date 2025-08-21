@@ -10,6 +10,7 @@ const PDFDocument = require('pdfkit');
 const ExcelJS = require('exceljs');
 const fs = require('fs');
 const path = require('path');
+const HTTP_STATUS = require('../../constants/httpStatus');
 
 
 
@@ -48,13 +49,13 @@ const updateOrder = async (req, res) => {
         const { orderId, status } = req.body
 
         if (!orderId || !status) {
-            return res.status(400).json({ success: false, message: "order ID and status are required" })
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "order ID and status are required" })
         }
 
         const order = await Order.findById(orderId)
 
         if (!order) {
-            return res.status(404).json({ success: false, message: "order not found" })
+            return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "order not found" })
         }
 
         order.status = status
@@ -74,7 +75,7 @@ const updateOrder = async (req, res) => {
 
     } catch (error) {
         console.log("error updating order", error)
-        res.status(500).json({ success: false, message: "internal server error" })
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: "internal server error" })
     }
 }
 
@@ -83,16 +84,16 @@ const cancelOrder = async (req, res) => {
         const { orderId } = req.body;
 
         if (!orderId) {
-            return res.status(400).json({ success: false, message: "Order ID is required" });
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Order ID is required" });
         }
 
         const order = await Order.findById(orderId);
         if (!order) {
-            return res.status(404).json({ success: false, message: "Order not found" });
+            return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Order not found" });
         }
 
         if (order.status === 'cancelled') {
-            return res.status(400).json({ success: false, message: "Order is already cancelled" });
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Order is already cancelled" });
         }
 
         for (const item of order.items) {
@@ -128,7 +129,7 @@ const cancelOrder = async (req, res) => {
 
     } catch (error) {
         console.error("Error cancelling order:", error);
-        res.status(500).json({ success: false, message: "Internal server error" });
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: "Internal server error" });
     }
 };
 
@@ -137,7 +138,7 @@ const approveReturn = async (req, res) => {
     try {
         const { orderId } = req.body
         if (!orderId) {
-            return res.status(404).json({ success: false, message: "order not found" })
+            return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "order not found" })
         }
         const order = await Order.findByIdAndUpdate(orderId, { status: 'Return approved' })
 
@@ -169,7 +170,7 @@ const approveReturn = async (req, res) => {
         res.status(200).json({ success: true, message: "Return approved" })
     } catch (error) {
         console.log("error approving return", error)
-        res.status(500).json({ success: false, message: "internal server error" })
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: "internal server error" })
     }
 }
 
@@ -179,11 +180,11 @@ const rejectReturn = async (req, res) => {
         const orderId = req.params.orderId
 
         if (!orderId) {
-            return res.status(404).json({ success: false, message: "Order Id not found" })
+            return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Order Id not found" })
         }
         const order = await Order.findById(orderId)
         if (!order) {
-            return res.status(404).json({ success: false, message: "order not found" })
+            return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "order not found" })
         }
         order.status = "Return rejected"
         order.adminReturnStatus = reason
@@ -193,7 +194,7 @@ const rejectReturn = async (req, res) => {
         res.status(200).json({ success: true, message: "Return rejected" })
     } catch (error) {
         console.log("error rejecting return", error)
-        res.status(500).json({ success: false, message: "internal server error" })
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: "internal server error" })
     }
 }
 
@@ -285,7 +286,7 @@ const getSalesReport = async (req, res) => {
 
     } catch (error) {
         console.log("Error getting sales report", error);
-        res.status(500).json({ success: false, message: "Internal server error" });
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: "Internal server error" });
     }
 };
 
@@ -453,7 +454,7 @@ const getSalesReportPDF = async (req, res) => {
             res.download(filePath, 'Soundora_sales_report.pdf', (err) => {
                 if (err) {
                     console.error("Error downloading PDF:", err);
-                    res.status(500).send("Error downloading PDF");
+                    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send("Error downloading PDF");
                 }
                 fs.unlinkSync(filePath);
             });
@@ -461,7 +462,7 @@ const getSalesReportPDF = async (req, res) => {
 
     } catch (error) {
         console.log("Error generating sales report PDF", error);
-        res.status(500).json({ success: false, message: "Internal server error" });
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: "Internal server error" });
     }
 };
 
@@ -615,7 +616,7 @@ const getSalesReportExcel = async (req, res) => {
 
     } catch (error) {
         console.log("Error generating Excel report", error);
-        res.status(500).json({ success: false, message: "Internal server error" });
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: "Internal server error" });
     }
 };
 

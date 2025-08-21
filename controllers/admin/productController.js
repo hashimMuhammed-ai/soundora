@@ -6,6 +6,7 @@ const User = require('../../models/userModel');
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
+const HTTP_STATUS = require('../../constants/httpStatus');
 
 
 const getProductAddPage = async (req, res) => {
@@ -194,10 +195,10 @@ const addProductOffer = async (req, res) => {
 
       const product = await Product.findById(productId);
       if(!product){
-         return res.status(404).json({success: false, message: 'Product not found'})
+         return res.status(HTTP_STATUS.NOT_FOUND).json({success: false, message: 'Product not found'})
       }
       if (offerPercentage < 0 || offerPercentage > 100) {
-         return res.status(400).json({ success: false, message: 'Invalid offer percentage' });
+         return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: 'Invalid offer percentage' });
       }
 
       product.productOffer = offerPercentage || 0
@@ -218,7 +219,7 @@ const addProductOffer = async (req, res) => {
       res.json({ success: true, product });
    } catch (error) {
        console.error('Error adding product offer:', error);
-       res.status(500).json({ success: false, message: 'Failed to add offer' });
+       res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Failed to add offer' });
    }
 };
 
@@ -229,7 +230,7 @@ const deleteProductOffer = async (req, res) => {
 
        const product = await Product.findById(productId);
        if (!product) {
-           return res.status(404).json({ success: false, message: 'Product not found' });
+           return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: 'Product not found' });
        }
        product.productOffer = 0;
        product.offerEndDate = null;
@@ -245,7 +246,7 @@ const deleteProductOffer = async (req, res) => {
        res.json({ success: true, product });
    } catch (error) {
        console.error('Error deleting product offer:', error);
-       res.status(500).json({ success: false, message: 'Failed to delete offer' });
+       res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Failed to delete offer' });
    }
 };
 
@@ -258,7 +259,7 @@ const toggleProductList = async (req, res) => {
       const productToToggle = await Product.findById(productId);
 
       if (!productToToggle) {
-         return res.status(404).json({
+         return res.status(HTTP_STATUS.NOT_FOUND).json({
             error: 'Product not found',
             success: false
          });
@@ -275,7 +276,7 @@ const toggleProductList = async (req, res) => {
 
    } catch (error) {
       console.error("Error toggling product list status:", error);
-      res.status(500).json({
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
          error: 'Failed to toggle product status',
          success: false
       });
@@ -324,7 +325,7 @@ const editProduct = async (req, res) => {
       }
 
       if (!data.productName || !data.category || !data.regularPrice || !data.salePrice || !data.brand) {
-         return res.status(400).json({
+         return res.status(HTTP_STATUS.BAD_REQUEST).json({
             success: false,
             message: 'Product Name, Category, Regular Price, Sale Price, and Brand are required',
          });
@@ -332,7 +333,7 @@ const editProduct = async (req, res) => {
 
       const existingProduct = await Product.findById(id);
       if (!existingProduct) {
-         return res.status(404).json({
+         return res.status(HTTP_STATUS.NOT_FOUND).json({
             success: false,
             message: 'Product not found',
          });
@@ -342,7 +343,7 @@ const editProduct = async (req, res) => {
       const salePrice = parseFloat(data.salePrice);
 
       if (isNaN(regularPrice) || isNaN(salePrice) || regularPrice <= 0 || salePrice <= 0) {
-         return res.status(400).json({
+         return res.status(HTTP_STATUS.BAD_REQUEST).json({
             success: false,
             message: 'Invalid price values',
          });
@@ -350,7 +351,7 @@ const editProduct = async (req, res) => {
 
       const categoryId = await Category.findOne({ _id: data.category });
       if (!categoryId) {
-         return res.status(400).json({
+         return res.status(HTTP_STATUS.BAD_REQUEST).json({
             success: false,
             message: 'Category not found',
          });
@@ -358,7 +359,7 @@ const editProduct = async (req, res) => {
 
       const brand = await Brand.findById(data.brand);
       if (!brand) {
-         return res.status(400).json({
+         return res.status(HTTP_STATUS.BAD_REQUEST).json({
             success: false,
             message: 'Brand not found',
          });
@@ -390,7 +391,7 @@ const editProduct = async (req, res) => {
       const updatedImages = [...remainingImages, ...newImages];
 
       if (updatedImages.length < 3 || updatedImages.length > 4) {
-         return res.status(400).json({
+         return res.status(HTTP_STATUS.BAD_REQUEST).json({
             success: false,
             message: 'You must have between 3 and 4 images',
          });
@@ -418,13 +419,13 @@ const editProduct = async (req, res) => {
          }
       }
 
-      return res.status(200).json({
+      return res.status(HTTP_STATUS.OK).json({
          success: true,
          message: 'Product updated successfully',
       });
    } catch (error) {
       console.error('Error editing product:', error);
-      return res.status(500).json({
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
          success: false,
          message: error.message,
       });
@@ -437,7 +438,7 @@ const deleteSingleImage = async (req, res) => {
 
       const product = await Product.findById(productIdToServer)
       if (!product) {
-         return res.status(404).send({ status: false, message: 'Product not found' })
+         return res.status(HTTP_STATUS.NOT_FOUND).send({ status: false, message: 'Product not found' })
       }
 
 
@@ -449,7 +450,7 @@ const deleteSingleImage = async (req, res) => {
 
       if (!imageRemoved) {
          console.error('Failed to remove image from product')
-         return res.status(400).send({ status: false, message: 'Failed to remove image from product' })
+         return res.status(HTTP_STATUS.BAD_REQUEST).send({ status: false, message: 'Failed to remove image from product' })
       }
 
       console.log('Product images after deletion:', imageRemoved.productImages)
@@ -494,7 +495,7 @@ const imagePaths = [
          message: error.message,
          stack: error.stack
       })
-      res.status(500).send({
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send({
          status: false,
          message: 'Internal server error',
          errorDetails: error.message

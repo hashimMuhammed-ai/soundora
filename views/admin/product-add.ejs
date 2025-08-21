@@ -77,9 +77,19 @@
 
         .form-control:focus,
         .form-select:focus {
-            border-color: #3498db;
-            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.15);
-            background-color: white;
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.15);
+        background-color: white;
+        }
+        
+        .form-select option:disabled {
+        display: none;
+        }
+        
+        .form-select option {
+        color: #2c3e50;
+        background-color: #f4f7f6;
+        padding: 10px;
         }
 
         /* Error Message Styling */
@@ -362,7 +372,8 @@
                                 <div class="col-lg-4 mb-4" id="flexy">
                                     <label class="form-label">Category</label>
                                     <select class="form-select" name="category">
-                                        <% for(let i=0 ;i<cat.length;i++){ %>
+                                    <option value="" selected disabled>Select Category</option>
+                                    <% for(let i=0 ;i<cat.length;i++){ %>
                                             <option value="<%=cat[i].name %>">
                                                 <%=cat[i].name %>
                                             </option>
@@ -376,7 +387,8 @@
                                 <div class="col-lg-4 mb-4" id="flexy">
                                     <label class="form-label">Brand</label>
                                     <select class="form-select" name="brand">
-                                        <% for(let i=0 ;i< brand.length;i++){ %>
+                                    <option value="" selected disabled>Select Brand</option>
+                                    <% for(let i=0 ;i< brand.length;i++){ %>
                                             <option value="<%=brand[i].brandName %>">
                                                 <%=brand[i].brandName %>
                                             </option>
@@ -486,7 +498,7 @@
             let isValid = true;
             const errors = {};
 
-            const requiredFields = ['productName', 'description', 'regularPrice', 'category', 'salePrice', 'quantity'];
+            const requiredFields = ['productName', 'description', 'regularPrice', 'category', 'brand', 'salePrice', 'quantity'];
             requiredFields.forEach(field => {
                 const input = document.querySelector(`[name="${field}"]`);
                 if (!input || !input.value.trim()) {

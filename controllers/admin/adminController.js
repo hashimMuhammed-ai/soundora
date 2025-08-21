@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const Order = require('../../models/orderModel');
 const bcrypt = require('bcrypt');
 const moment = require('moment');
+const HTTP_STATUS = require('../../constants/httpStatus');
 
 
 
@@ -178,7 +179,7 @@ const getDashboard = async (req, res) => {
         return res.render('admin/dashboard', { dashboardData, orders, topSellingProducts, topSellingCategories, topSellingBrands });
     } catch (err) {
         console.log('Dashboard load error:', err);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' });
     }
 };
 
@@ -189,7 +190,7 @@ const getDashboardDataAPI = async (req, res) => {
         let endDate = req.query.endDate ? new Date(req.query.endDate) : null;
 
         if (!timeFilter) {
-            return res.status(400).json({ error: 'timeFilter parameter is required' });
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({ error: 'timeFilter parameter is required' });
         }
 
         // Fallback to weekly if custom-range is selected without dates
@@ -205,7 +206,7 @@ const getDashboardDataAPI = async (req, res) => {
         res.json(dashboardData);
     } catch (err) {
         console.log('Dashboard data API error:', err);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' });
     }
 };
 

@@ -8,6 +8,7 @@ const Order = require('../../models/orderModel');
 const multer = require('multer');
 const storage = require('../../helpers/multer');
 const Wallet = require('../../models/walletModel');
+const HTTP_STATUS = require('../../constants/httpStatus');
 
 
 
@@ -108,7 +109,7 @@ const verifyForgotPassOtp = async (req, res) => {
         }
     } catch (error) {
         console.error("Error in verifyForgotPassOtp:", error)
-        res.status(500).json({ success: false, message: "Internal server error" })
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: "Internal server error" })
     }
 }
 
@@ -128,17 +129,17 @@ const resendtOTP = async (req, res) => {
         const email = req.session.userData?.email
 
         if (!email) {
-            return res.status(400).json({ success: false, message: "Email not found in session" })
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Email not found in session" })
         }
 
         const emailSent = await sendVerificationEmail(email, otp);
         if (emailSent) {
             console.log("Resent otp sent", otp)
-            res.status(200).json({ success: true, message: "OTP resent successfully" })
+            res.status(HTTP_STATUS.OK).json({ success: true, message: "OTP resent successfully" })
         }
     } catch (error) {
         console.log("Error resending otp", error)
-        res.status(500).json({ success: false, message: "Internal server error" })
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: "Internal server error" })
     }
 }
 
@@ -181,24 +182,48 @@ const getUserProfile = async (req, res) => {
         const userId = req.session.user;
         const user = await User.findById(userId);
 
-        const walletData = await Wallet.findOne({ userId: userId }) || { transactions: [], balance: 0 };
-        walletData.transactions = walletData.transactions.sort((a, b) => b.createdAt - a.createdAt);
-        
-        const page = parseInt(req.query.page) || 1;
-        const limit = 4;
-        const skip = (page - 1) * limit;
+        const walletData = await Wallet.findOne({ userId: userId });
+
+        const orderPage = parseInt(req.query.orderPage) || 1;
+        const walletPage = parseInt(req.query.walletPage) || 1;
+
+        const orderLimit = 4;
+        const orderSkip = (orderPage - 1) * orderLimit;
 
         const totalOrders = await Order.countDocuments({ userId });
         const orders = await Order.find({ userId })
             .populate("items.productId")
             .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit);
+            .skip(orderSkip)
+            .limit(orderLimit);
 
-        const totalPages = Math.ceil(totalOrders / limit);
+        const orderTotalPages = Math.ceil(totalOrders / orderLimit);
+
+        const totalTransactions = walletData ? walletData.transactions.length : 0;
+        const walletLimit = 10;
+        const walletSkip = (walletPage - 1) * walletLimit;
+
+        const paginatedTransactions = walletData ? walletData.transactions
+            .sort((a, b) => b.createdAt - a.createdAt)
+            .slice(walletSkip, walletSkip + walletLimit) : [];
+
+        const walletTotalPages = Math.ceil(totalTransactions / walletLimit);
+
         const baseUrl = process.env.BASE_URL || 'http://localhost:3004';
 
-        res.render('user/profile', { user, orders, totalPages, currentPage: page, wallet: walletData, baseUrl })
+        res.render('user/profile', { 
+            user, 
+            orders, 
+            orderTotalPages, 
+            orderCurrentPage: orderPage, 
+            wallet: { 
+                balance: walletData ? walletData.balance : 0, 
+                transactions: paginatedTransactions 
+            }, 
+            walletTotalPages, 
+            walletCurrentPage: walletPage, 
+            baseUrl 
+        })
     } catch (error) {
         console.log(error)
     }
@@ -264,7 +289,7 @@ const postAddAddress = async (req, res) => {
 
     } catch (error) {
         console.error('Error in Adding Address', error);
-        res.status(500).json({ success: false, message: 'Something Went Wrong!' });
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Something Went Wrong!' });
     }
 }
 
@@ -285,11 +310,11 @@ const postEditAddress = async (req, res) => {
         const userId = req.session.user;
         const userAddress = await Address.findOne({ userId });
         if (!userAddress) {
-            return res.status(404).json({ success: false, message: 'Address record not found' })
+            return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: 'Address record not found' })
         }
         const addressItem = userAddress.address.id(addressId);
         if (!addressItem) {
-            return res.status(404).json({ success: false, message: 'Address Not Found' })
+            return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: 'Address Not Found' })
         }
         addressItem.addressType = addressType;
         addressItem.name = name;
@@ -303,7 +328,7 @@ const postEditAddress = async (req, res) => {
         res.json({ success: true, message: 'Address Updated Successfully' });
     } catch (error) {
         console.error('Error Updating Error', error);
-        res.status(500).json({ success: false, message: 'Server Error' })
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Server Error' })
     }
 }
 
@@ -314,18 +339,18 @@ const deleteAddress = async (req, res) => {
         const userId = req.session.user;
         const userAddress = await Address.findOne({ userId });
         if (!userAddress) {
-            return res.status(404).json({ success: false, message: 'Address record not found' })
+            return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: 'Address record not found' })
         }
         const addressItem = userAddress.address.id(addressId);
         if (!addressItem) {
-            return res.status(404).json({ success: false, message: 'Address not found' });
+            return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: 'Address not found' });
         }
         userAddress.address.pull({ _id: addressId });
         await userAddress.save();
         res.json({ success: true, message: 'Address Deleted Successfully' })
     } catch (error) {
         console.error('Error Deleting Address', error);
-        res.status(500).json({ success: false, message: 'Server Error' })
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Server Error' })
     }
 }
 
@@ -398,17 +423,17 @@ const verifyCurrentPassword = async (req, res) => {
         const userId = req.session.user;
         const user = await User.findById(userId);
         if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: 'User not found' });
         }
         const isMatch = await bcrypt.compare(currentPassword, user.password);
         if (!isMatch) {
-            return res.status(401).json({ success: false, message: 'Current Password is incorrect' })
+            return res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: 'Current Password is incorrect' })
         }
         res.json({ success: true });
 
     } catch (error) {
         console.error('Error verifying password', error);
-        res.status(500).json({ success: false, message: 'internal server error' });
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: 'internal server error' });
     }
 }
 
@@ -418,17 +443,17 @@ const updatePassword = async (req, res) => {
         const { newPassword } = req.body;
         const userId = req.session.user;
         if (!userId) {
-            return res.status(401).json({ success: false, message: 'Unauthorized: No user session found' });
+            return res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: 'Unauthorized: No user session found' });
         }
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         const updatedPassword = await User.findByIdAndUpdate(userId, { $set: { password: hashedPassword } }, { new: true });
         if (!updatedPassword) {
-            return res.status(500).json({ success: false, message: 'Failed to update password' });
+            return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Failed to update password' });
         }
         res.json({ success: true })
     } catch (error) {
         console.error('Password Updating Error', error);
-        res.status(500).json({ success: false, message: 'Server Error' });
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Server Error' });
     }
 }
 

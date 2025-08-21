@@ -1,5 +1,6 @@
 const Coupon = require("../../models/couponModel");
 const { validationResult } = require('express-validator');
+const HTTP_STATUS = require('../../constants/httpStatus');
 
 
 const getCouponPage = async (req, res) => {
@@ -16,7 +17,7 @@ const getCouponPage = async (req, res) => {
 
     } catch (error) {
         console.log("error in loading coupon page", error)
-        return res.status(500).json({ success: false, message: "Internal server error" })
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: "Internal server error" })
     }
 }
 
@@ -26,7 +27,7 @@ const addCoupon = async (req, res) => {
 
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({
             success: false,
             message: 'Validation failed',
             errors: errors.array()
@@ -34,7 +35,7 @@ const addCoupon = async (req, res) => {
         }
 
         if (couponType !== 'percentage') {
-            return res.status(400).json({
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({
                 success: false,
                 message: "Invalid coupon type. Must be 'percentage'."
             });
@@ -42,7 +43,7 @@ const addCoupon = async (req, res) => {
 
         const existingCoupon = await Coupon.findOne({ couponCode });
         if (existingCoupon) {
-            return res.status(400).json({
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({
                 success: false,
                 message: "Coupon code already exists!"
             });
@@ -55,7 +56,7 @@ const addCoupon = async (req, res) => {
 
 
         if (isNaN(parsedDiscount) || parsedDiscount <= 0) {;;;;;
-            return res.status(400).json({
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({
                 success: false,
                 message: "Discount must be a positive number"
             });
@@ -63,20 +64,20 @@ const addCoupon = async (req, res) => {
 
         if (couponType === 'percentage') {
             if (parsedDiscount > 100) {
-                return res.status(400).json({
+                return res.status(HTTP_STATUS.BAD_REQUEST).json({
                     success: false,
                     message: "Percentage discount cannot exceed 100%"
                 });
             }
         } 
         if (isNaN(parsedMinPurchase) || parsedMinPurchase < 0) {
-            return res.status(400).json({
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({
                 success: false,
                 message: "Minimum purchase must be a non-negative number"
             });
         }
         if(isNaN(parsedMaxDiscount) || parsedMaxDiscount < 0){
-            return res.status(400).json({
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({
                 success: false,
                 message: "Maximum discount must be a non-negative number"
             })
@@ -84,14 +85,14 @@ const addCoupon = async (req, res) => {
 
         const parsedExpiryDate = new Date(expiryDate);
         if (parsedExpiryDate < new Date()) {
-            return res.status(400).json({
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({
                 success: false,
                 message: "Expiry date must be in the future"
             });
         }
 
         if (isNaN(parsedUsageLimit) || parsedUsageLimit <= 0) {
-            return res.status(400).json({
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({
                 success: false,
                 message: "Usage limit must be a positive number"
             });
@@ -110,7 +111,7 @@ const addCoupon = async (req, res) => {
 
         await newCoupon.save();
 
-        res.status(201).json({
+        res.status(HTTP_STATUS.CREATED).json({
             success: true,
             message: "Coupon added successfully",
             coupon: newCoupon
@@ -118,7 +119,7 @@ const addCoupon = async (req, res) => {
 
     } catch (error) {
         console.error("Detailed error in add coupon:", error);
-        res.status(500).json({
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: "Internal server error",
             errorDetails: error.message
@@ -133,7 +134,7 @@ const toggleCoupon = async (req, res) => {
         const couponToToggle = await Coupon.findById(coupenId)
 
         if(!couponToToggle){
-            return res.status(404).json({
+            return res.status(HTTP_STATUS.NOT_FOUND).json({
                 success: false,
                 message: "Coupon not found"
             })
@@ -142,14 +143,14 @@ const toggleCoupon = async (req, res) => {
 
         await couponToToggle.save()
         
-        res.status(200).json({
+        res.status(HTTP_STATUS.OK).json({
             success: true,
             message: `Coupon ${isActive ? 'activated' : 'inactivated'} successfully`,
             isActive: couponToToggle.isActive
         })
     } catch (error) {
         console.log("error toggling coupon", error)
-        res.status(500).json({
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: "Internal server error",
             errorDetails: error.message

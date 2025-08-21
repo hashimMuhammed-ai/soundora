@@ -6,6 +6,7 @@ const Cart = require("../../models/cartModel");
 const Product = require("../../models/productModel");
 const Address = require("../../models/addressModel");
 const User = require("../../models/userModel");
+const HTTP_STATUS = require('../../constants/httpStatus');
 
 const razorpayInstance = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -18,14 +19,14 @@ const createOrder = async (req, res) => {
         const cart = await Cart.findOne({userId: req.session.user}).populate('items.productId');
 
         if(!cart){
-            return res.status(404).json({ success: false, error: "cart not found" }); 
+            return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, error: "cart not found" }); 
         }
 
         const inActiveCartItems = cart.items.filter((itm)=>
             itm.productId.isBlocked || !itm.productId.isListed); 
 
         if(inActiveCartItems.length > 0){
-           return res.status(404).json({ success: false, error: "cart contains inactive items" }); 
+           return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, error: "cart contains inactive items" }); 
         }
 
         const { amount, currency } = req.body;
@@ -48,7 +49,7 @@ const createOrder = async (req, res) => {
 
     } catch (error) {
         console.error("Error creating order:", error);
-        res.status(500).json({ success: false, error: "Failed to create order" });
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, error: "Failed to create order" });
     }
 };
 
@@ -65,18 +66,18 @@ const verifyPayment = async (req, res) => {
         } = req.body;
 
         if (!req.session.user) {
-            return res.status(401).json({ success: false, message: "Not authenticated" });
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Not authenticated" });
         }
         const userAddress = await Address.findOne({
-            userId:req.session.user,
-            "address._id":shippingAddress
+        userId:req.session.user,
+        "address._id":shippingAddress
         },{
-            address: {$elemMatch: {_id: shippingAddress}}
+        address: {$elemMatch: {_id: shippingAddress}}
         })
-
-       if (!userAddress || !userAddress.address || userAddress.address.length === 0) {
-           return res.status(400).json({ success: false, message: 'Selected address not found' });
-       }
+        
+        if (!userAddress || !userAddress.address || userAddress.address.length === 0) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: 'Selected address not found' });
+        }
        const selectedAddress = userAddress.address[0];
 
        console.log("selectedAddress", selectedAddress)
@@ -166,12 +167,12 @@ const verifyPayment = async (req, res) => {
             });
             await failedOrder.save();
 
-            res.status(400).json({ success: false, message: "Payment verification failed", orderId: failedOrder._id });
+            res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Payment verification failed", orderId: failedOrder._id });
 
         }
     } catch (error) {
         console.error("Payment Verification Error:", error);
-        res.status(500).json({ success: false, message: "Failed to verify payment" });
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to verify payment" });
     }
 }
 
@@ -199,11 +200,11 @@ const retryPayment = async (req, res) => {
 
         const failedOrder = await Order.findById(orderId);
         if (!failedOrder || failedOrder.userId.toString() !== req.session.user) {
-            return res.status(404).json({ success: false, message: "Order not found or not authorized" });
+            return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Order not found or not authorized" });
         }
 
         if (failedOrder.status !== "failed") {
-            return res.status(400).json({ success: false, message: "This order cannot be retried" });
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "This order cannot be retried" });
         }
 
         const options = {
@@ -225,7 +226,7 @@ const retryPayment = async (req, res) => {
 
     } catch (error) {
         console.error("Retry Payment Error:", error);
-        res.status(500).json({ success: false, message: "Failed to retry payment" });
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to retry payment" });
     }
 };
 
@@ -239,12 +240,12 @@ const verifyRetryPayment = async (req, res) => {
         } = req.body;
 
         if (!req.session.user) {
-            return res.status(401).json({ success: false, message: "Not authenticated" });
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Not authenticated" });
         }
-
+        
         const failedOrder = await Order.findById(orderId);
         if (!failedOrder) {
-            return res.status(404).json({ success: false, message: "Order not found" });
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Order not found" });
         }
 
         const generatedSignature = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
@@ -290,11 +291,11 @@ const verifyRetryPayment = async (req, res) => {
             });
         } else {
             console.log("Retry Payment failed: Signature Mismatch");
-            res.status(400).json({ success: false, message: "Payment verification failed" });
+            res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Payment verification failed" });
         }
     } catch (error) {
         console.error("Retry Payment Verification Error:", error);
-        res.status(500).json({ success: false, message: "Failed to verify payment" });
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to verify payment" });
     }
 }
 

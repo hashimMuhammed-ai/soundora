@@ -2,6 +2,7 @@ const User = require("../../models/userModel");
 const Product = require("../../models/productModel");
 const Cart = require('../../models/cartModel');
 const Wishlist = require('../../models/wishlistModel');
+const HTTP_STATUS = require('../../constants/httpStatus');
 
 const loadCart = async (req, res) => {
     try {
@@ -50,7 +51,7 @@ const loadCart = async (req, res) => {
 
     } catch (error) {
         console.error("Error loading cart:", error);
-        res.status(500).send("Failed to load cart");
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send("Failed to load cart");
     }
 };
 
@@ -61,7 +62,7 @@ const addToCart = async (req, res) => {
         const userId = req.session.user;
 
         if (!productId) {
-            return res.status(400).json({ 
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({ 
                 success: false,
                 message: "Product ID is required" 
             });
@@ -70,7 +71,7 @@ const addToCart = async (req, res) => {
         const product = await Product.findById(productId).populate("category");
         
         if (!product) {
-            return res.status(404).json({ 
+            return res.status(HTTP_STATUS.NOT_FOUND).json({ 
                 success: false,
                 message: "Product not found" 
             });
@@ -78,7 +79,7 @@ const addToCart = async (req, res) => {
 
         // Check if product or category is unlisted or out of stock
         if (!product.isListed || (product.category && !product.category.isListed) || product.quantity === 0) {
-            return res.status(400).json({ 
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({ 
                 success: false,
                 message: "Product cannot be added (unlisted, category unlisted, or out of stock)" 
             });
@@ -102,19 +103,19 @@ const addToCart = async (req, res) => {
             let newQuantity = cart.items[existingItemIndex].quantity + itemQuantity;
 
             if (newQuantity > 5) {
-                return res.status(400).json({ 
+                return res.status(HTTP_STATUS.BAD_REQUEST).json({ 
                     success: false,
                     message: "You can only order up to 5 items" 
                 });
             }
             if (newQuantity > product.quantity) {
-                return res.status(400).json({ 
+                return res.status(HTTP_STATUS.BAD_REQUEST).json({ 
                     success: false,
                     message: "You can not order more than available stock" 
                 });
             }
             if (newQuantity < 1) {
-                return res.status(400).json({ 
+                return res.status(HTTP_STATUS.BAD_REQUEST).json({ 
                     success: false,
                     message: "Quantity cannot be less than 1" 
                 });
@@ -152,7 +153,7 @@ const addToCart = async (req, res) => {
 
     } catch (error) {
         console.error("Error in add to cart:", error);
-        res.status(500).json({
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: "Failed to add product to cart \n LOGIN FIRST"
         });
@@ -167,13 +168,13 @@ const removeCartItem = async (req, res) => {
         let cart = await Cart.findOne({ userId });
 
         if (!cart) {
-            return res.status(404).json({ success: false, message: "Cart not found" });
+            return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Cart not found" });
         }
 
         const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
 
         if (itemIndex === -1) {
-            return res.status(404).json({ success: false, message: "Product not found in cart" });
+            return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Product not found in cart" });
         }
 
         cart.items.splice(itemIndex, 1);
@@ -186,7 +187,7 @@ const removeCartItem = async (req, res) => {
 
     } catch (error) {
         console.error("Error removing item:", error);
-        return res.status(500).json({ success: false, message: "Internal server error" });
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: "Internal server error" });
     }
 };
 

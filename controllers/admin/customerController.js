@@ -1,6 +1,7 @@
 const User = require('../../models/userModel');
 // const mongoose = require('mongoose');
 // const bcrypt = require('bcrypt');
+const HTTP_STATUS = require('../../constants/httpStatus');
 
 
 
@@ -38,7 +39,7 @@ const toggleBlock = async (req, res) => {
 
     const user = await User.findById(id);
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "User not found" });
     }
 
     user.isBlocked = isBlocked;
@@ -47,7 +48,7 @@ const toggleBlock = async (req, res) => {
     return res.json({ success: true, message: "Updated Successfully" });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ success: false, message: "Something went wrong" });
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: "Something went wrong" });
   }
 }
 

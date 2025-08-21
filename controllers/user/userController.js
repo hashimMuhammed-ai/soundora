@@ -5,6 +5,7 @@ const Brand = require('../../models/brandModel');
 const Wallet = require('../../models/walletModel');
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
+const HTTP_STATUS = require('../../constants/httpStatus');
 
 
 const pageNotFound = (req, res) => {
@@ -44,7 +45,7 @@ const loadHompage = async (req, res) => {
       
    } catch (error) {
       console.log('error loading home page');
-      res.status(500).send('Internal server error');
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send('Internal server error');
    }
 }
 
@@ -131,7 +132,7 @@ const verifyOtp = async (req, res) => {
     const {otp} = req.body;
     
     if(otp !== req.session.userOtp){
-      return res.status(400).json({success: false, message: 'Invalid OTP, Please try again'})
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({success: false, message: 'Invalid OTP, Please try again'})
     }
 
     const user = req.session.userData;
@@ -193,7 +194,7 @@ const verifyOtp = async (req, res) => {
 
   } catch (error) {
     console.error('Error verifying OTP', error);
-    res.status(500).json({success: false, message: 'An error occured'})
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({success: false, message: 'An error occured'})
   }
 }
 
@@ -201,20 +202,20 @@ const resendOtp = async (req, res) => {
   try {
     const {email} = req.session.userData;
     if(!email){
-      return res.status(400).json({success: false, message: 'Email not found in session'})
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({success: false, message: 'Email not found in session'})
     }
     const otp = generateOtp();
     req.session.userOtp = otp;
     const emailSent = await sendVerificationEmail(email, otp);
     if(emailSent){
       console.log('Resend OTP', otp);
-      res.status(200).json({success: true, message: 'OTP Resend Successfully'});
+      res.status(HTTP_STATUS.OK).json({success: true, message: 'OTP Resend Successfully'});
     }else {
-      res.status(500).json({success: false, message: 'Failed to resend OTP, Please try again'});
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({success: false, message: 'Failed to resend OTP, Please try again'});
     }
   } catch (error) {
     console.error('Error resending OTP', error);
-    res.status(500).json({success: false, message: 'Internal Server Error, Please try again'})
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({success: false, message: 'Internal Server Error, Please try again'})
   }
 }
 
@@ -304,7 +305,7 @@ const loadShoppingPage = async (req, res) => {
 
     } catch (error) {
         console.log("load Shop Page error", error);
-        res.status(500).render('error', { message: "Failed to load shop page" });
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).render('error', { message: "Failed to load shop page" });
     }
 };
 
@@ -395,7 +396,7 @@ const filterProducts = async (req, res) => {
 
     } catch (error) {
         console.log("error filtering products", error);
-        res.status(500).json({ success: false, message: "Internal server error" });
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: "Internal server error" });
     }
 };
 
