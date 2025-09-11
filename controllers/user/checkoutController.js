@@ -174,9 +174,9 @@ const placeOrder = async (req, res) => {
             .populate('items.productId')
             .populate({
                 path: 'userId',
-                select: 'name email' // no wallet here
+                select: 'name email'
             })
-            .exec();
+                
 
         if (!cart || cart.items.length === 0) {
             return res.status(400).json({ 

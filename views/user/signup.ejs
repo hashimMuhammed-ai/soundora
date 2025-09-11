@@ -271,7 +271,7 @@
         const confirmVal = cpassid.value.trim();
         if (!confirmVal || passVal !== confirmVal) {
           error5.style.display = "block";
-          error5.innerHTML = !val ? "Confirm password is required" : "Passwords don't match";
+          error5.innerHTML = !confirmVal ? "Confirm password is required" : "Passwords don't match";
           return false;
         }
         error5.style.display = "none";

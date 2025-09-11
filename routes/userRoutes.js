@@ -94,6 +94,7 @@ router.delete("/wishlist/remove/:productId", userAuth, wishlistCtrl.removeWishli
 
 //Wallet Management
 router.post("/addMoney", userAuth, walletCtrl.addMoney);
+router.post("/verifyWalletPayment", userAuth, walletCtrl.verifyPayment);
 
 
 

@@ -7,7 +7,7 @@
     <meta name="keywords" content="Male_Fashion, unica, creative, html" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Timless Aura</title>
+    <title>Soundora</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800;900&display=swap"
         rel="stylesheet" />
     <link rel="stylesheet" href="/css/bootstrap.min.css" type="text/css" />
@@ -268,12 +268,19 @@
                 },
                 error: function (err) {
                     console.error("Error:", err);
+                    let message = "Something went wrong. Please try again.";
+
+                    if (err.responseJSON && err.responseJSON.message) {
+                        message = err.responseJSON.message;
+                    }
+
                     Swal.fire({
                         icon: "error",
                         title: "Error",
-                        text: "Something went wrong. Please try again."
+                        text: message
                     });
                 }
+
             });
             return false;
         }

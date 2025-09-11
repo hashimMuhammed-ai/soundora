@@ -1031,6 +1031,7 @@
   <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
   // ✅ Tab navigation logic with Bootstrap 4 (fixed)
@@ -1056,7 +1057,7 @@
     }
   });
 
-  // 💸 Handle addMoney form submission
+  // 💸 Handle addMoney form submission with Razorpay
   function addMoney(event) {
     event.preventDefault();
     const amount = document.querySelector('input[name="amount"]').value;
@@ -1066,6 +1067,7 @@
       return;
     }
 
+    // Create Razorpay order
     fetch('/addMoney', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1074,13 +1076,35 @@
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Success',
-          text: data.message,
-          showConfirmButton: false,
-          timer: 1500
-        }).then(() => window.location.reload());
+        // Initialize Razorpay payment
+        const options = {
+          key: data.key,
+          amount: data.amount,
+          currency: data.currency,
+          name: 'Soundora',
+          description: 'Add Money to Wallet',
+          order_id: data.orderId,
+          handler: function (response) {
+            // Payment successful, verify payment
+            verifyWalletPayment(response, data.amount);
+          },
+          prefill: {
+            name: '<%= user.name %>',
+            email: '<%= user.email %>',
+            contact: '<%= user.phone %>'
+          },
+          theme: {
+            color: '#ffa500'
+          },
+          modal: {
+            ondismiss: function() {
+              Swal.fire('Payment Cancelled', 'Payment was cancelled by user', 'info');
+            }
+          }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.open();
       } else {
         Swal.fire('Error!', data.message, 'error');
       }
@@ -1088,6 +1112,40 @@
     .catch((error) => {
       console.error('Error:', error);
       Swal.fire('Error!', 'Something went wrong. Please try again.', 'error');
+    });
+  }
+
+  // Verify wallet payment
+  function verifyWalletPayment(paymentResponse, amount) {
+    fetch('/verifyWalletPayment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        razorpay_order_id: paymentResponse.razorpay_order_id,
+        razorpay_payment_id: paymentResponse.razorpay_payment_id,
+        razorpay_signature: paymentResponse.razorpay_signature,
+        amount: amount
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Payment Successful!',
+          text: data.message,
+          showConfirmButton: false,
+          timer: 2000
+        }).then(() => {
+          window.location.reload();
+        });
+      } else {
+        Swal.fire('Payment Verification Failed!', data.message, 'error');
+      }
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      Swal.fire('Error!', 'Payment verification failed. Please contact support.', 'error');
     });
   }
 
