@@ -21,6 +21,11 @@ const orderItemSchema = new mongoose.Schema({
     type: Number,
     required: true,
     min: 0
+  },
+  status: {
+    type: String,
+    enum: ['active', 'cancelled'],
+    default: 'active'
   }
 });
 

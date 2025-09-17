@@ -544,7 +544,7 @@
                         <th>Price</th>
                         <th>Quantity</th>
                         <th>Total</th>
-                       
+                        <th>Status</th>
                         <% if (order.orderStatus !== 'cancelled' && order.orderStatus !== 'delivered' && order.orderStatus !== 'Return requested' && order.orderStatus !== 'Return approved') { %>
                             <th>Actions</th>
                         <% } %>
@@ -564,18 +564,29 @@
                                     <td>₹<%= item.price || 0 %></td>
                                     <td><%= item.quantity || 1 %></td>
                                     <td>₹<%= (item.price || 0) * (item.quantity || 1) %></td>
+                                    <td>
+                                        <% if (item.status === 'cancelled') { %>
+                                            <span class="status status-cancelled">Cancelled</span>
+                                        <% } else { %>
+                                            <span class="status status-delivered">Active</span>
+                                        <% } %>
+                                    </td>
                                     <% if (order.orderStatus !== 'cancelled' && order.orderStatus !== 'delivered' && order.orderStatus !== 'returned' &&  order.orderStatus !== 'failed' && order.orderStatus !== 'Return approved' && order.orderStatus !== 'Return requested' && order.orderStatus !== 'Return rejected') { %>
-                                    <td>                                       
-                                        <button class="btn-cancel" style="margin-top: -5px" onclick="openModal('<%= item._id %>')">
-                                            <i class="fas fa-times-circle"></i> Cancel
-                                        </button>   
+                                    <td>
+                                        <% if (item.status === 'cancelled') { %>
+                                            <span style="color:#999;">—</span>
+                                        <% } else { %>
+                                            <button class="btn-cancel" style="margin-top: -5px" onclick="openModal('<%= item._id %>')">
+                                                <i class="fas fa-times-circle"></i> Cancel
+                                            </button>
+                                        <% } %>
                                     </td>
                                     <% } %>
                                 </tr>
                             <% } %>
                         <% }); %>
                         <tr class="total-row">
-                            <td colspan="<%= order.orderStatus !== 'cancelled' && order.orderStatus !== 'delivered' && order.orderStatus !== 'Return requested' && order.orderStatus !== 'Return approved' ? 5 : 4 %>" style="text-align: right;">Total Amount:</td>
+                            <td colspan="<%= order.orderStatus !== 'cancelled' && order.orderStatus !== 'delivered' && order.orderStatus !== 'Return requested' && order.orderStatus !== 'Return approved' ? 6 : 5 %>" style="text-align: right;">Total Amount:</td>
                             <td>₹<%= order.totalAmount %></td>
                         </tr>
 

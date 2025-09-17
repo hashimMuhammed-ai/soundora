@@ -404,31 +404,41 @@ const cancelOrder = async (req, res) => {
                 return res.status(404).json({ success: false, message: 'Item not found' });
             }
             const itemToCancel = order.items[itemIndex];
+            // Restock the product for the cancelled quantity
             await Product.findByIdAndUpdate(itemToCancel.productId, {
                 $inc: { quantity: itemToCancel.quantity }
             }, { new: true });
+
+            // Mark item as cancelled instead of removing it
+            order.items[itemIndex].status = 'cancelled';
+
+            // Adjust order total amount for the cancelled item
             const itemTotal = itemToCancel.totalPrice;
-            order.items.splice(itemIndex, 1);
-            order.totalAmount -= itemTotal;
-            if (order.items.length === 0) {
+            order.totalAmount = Math.max(0, order.totalAmount - itemTotal);
+
+            // If all items are cancelled, mark the entire order as cancelled and refund shipping
+            const allCancelled = order.items.every(i => i.status === 'cancelled');
+            if (allCancelled) {
                 order.status = 'cancelled';
                 order.cancellationReason = reason;
-              
-                    if (order.paymentMethod !== 'cod') {
-                        const shippingCost = 40;
-                        wallet.balance += shippingCost;
-                        wallet.transactions.push({
-                            type: 'credit',
-                            amount: shippingCost,
-                            description: 'Refund for cancelled shipping',
-                            status: 'completed'
-                        });
-                        await wallet.save();
-                        order.totalAmount = 0;
-                    }
-                
+
+                if (order.paymentMethod !== 'cod') {
+                    const shippingCost = 40;
+                    wallet.balance += shippingCost;
+                    wallet.transactions.push({
+                        type: 'credit',
+                        amount: shippingCost,
+                        description: 'Refund for cancelled shipping',
+                        status: 'completed'
+                    });
+                    await wallet.save();
+                    order.totalAmount = 0;
+                }
             }
+
             await order.save();
+
+            // Refund the cancelled item amount (non-COD only)
             if (order.paymentMethod !== 'cod' && itemTotal > 0) {
                 const refundAmount = itemTotal;
                 wallet.balance += refundAmount;
@@ -440,6 +450,7 @@ const cancelOrder = async (req, res) => {
                 });
                 await wallet.save();
             }
+
             console.log('Item cancelled:', { itemId, refundAmount: itemTotal });
             return res.status(200).json({ success: true, message: 'Item cancelled successfully' });
         } else {
@@ -449,6 +460,8 @@ const cancelOrder = async (req, res) => {
                 }, { new: true });
             }
             const refundAmount = order.totalAmount;
+            // Mark all items as cancelled to keep them visible with status in the order view
+            order.items.forEach(i => { i.status = 'cancelled'; });
             order.status = 'cancelled';
             order.cancellationReason = reason;
             await order.save();
